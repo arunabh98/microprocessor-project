@@ -1,19 +1,28 @@
 v 3
-file . "my_alu.vhd" "20171022211017.000" "20171023024053.896":
-  entity alu at 1( 0) + 0 on 53;
-  architecture alu_behave of alu at 14( 274) + 0 on 54;
-file . "16bit_nand.vhd" "20171022204612.000" "20171023024053.848":
-  entity sixteenbitnand at 1( 0) + 0 on 51;
-  architecture comp_nand of sixteenbitnand at 9( 168) + 0 on 52;
-file . "subtractor.vhd" "20171018061801.000" "20171023024053.804":
-  entity subtractor at 1( 0) + 0 on 49;
-  architecture form of subtractor at 9( 133) + 0 on 50;
-file . "full_adder.vhd" "20171022195646.000" "20171023024053.751":
-  entity full_adder at 1( 0) + 0 on 47;
-  architecture form of full_adder at 9( 133) + 0 on 48;
-file . "16bit_adder.vhd" "20171022204642.000" "20171023024053.591":
-  entity sixteenbitadder at 1( 0) + 0 on 43;
-  architecture summer of sixteenbitadder at 11( 266) + 0 on 44;
-file . "16bit_sub.vhd" "20171022204727.000" "20171023024053.667":
-  entity sixteenbitsub at 1( 0) + 0 on 45;
-  architecture diff of sixteenbitsub at 11( 264) + 0 on 46;
+file . "rf.vhd" "20171021231044.000" "20171022044046.303":
+  entity rf at 4( 3) + 0 on 127;
+  architecture rf_behave of rf at 20( 335) + 0 on 128;
+file . "se7.vhd" "20171021230556.000" "20171022044046.342":
+  entity se7 at 2( 2) + 1 on 129;
+  architecture behave_se7 of se7 at 13( 207) + 0 on 130;
+file . "16bit_sub.vhd" "20171021230105.000" "20171022044046.125":
+  entity sixteenbitsub at 1( 0) + 0 on 117;
+  architecture diff of sixteenbitsub at 11( 264) + 0 on 118;
+file . "16bit_adder.vhd" "20171021230105.000" "20171022044046.024":
+  entity sixteenbitadder at 1( 0) + 0 on 115;
+  architecture summer of sixteenbitadder at 11( 266) + 0 on 116;
+file . "full_adder.vhd" "20171021230105.000" "20171022044046.185":
+  entity full_adder at 1( 0) + 0 on 119;
+  architecture form of full_adder at 9( 133) + 0 on 120;
+file . "subtractor.vhd" "20171021230105.000" "20171022044046.208":
+  entity subtractor at 1( 0) + 0 on 121;
+  architecture form of subtractor at 9( 133) + 0 on 122;
+file . "16bit_nand.vhd" "20171021230105.000" "20171022044046.231":
+  entity sixteenbitnand at 1( 0) + 0 on 123;
+  architecture comp_nand of sixteenbitnand at 9( 168) + 0 on 124;
+file . "my_alu.vhd" "20171021230105.000" "20171022044046.255":
+  entity alu at 1( 0) + 0 on 125;
+  architecture alu_behave of alu at 14( 274) + 0 on 126;
+file . "se10.vhd" "20171021230609.000" "20171022044046.366":
+  entity se10 at 2( 2) + 1 on 131;
+  architecture behave_se10 of se10 at 13( 208) + 0 on 132;

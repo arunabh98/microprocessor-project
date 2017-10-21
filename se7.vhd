@@ -7,7 +7,7 @@ use ieee.std_logic_1164.all;
 
 entity se7 is 
 	port( se_in : in std_logic_vector(8 downto 0);
-		  se_out: out std_logic_vector(15 downto 0);
+		  se_out: out std_logic_vector(15 downto 0));
 end entity;
 
 architecture behave_se7 of se7 is 

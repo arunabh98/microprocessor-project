@@ -14,6 +14,7 @@ architecture behave_se7 of se7 is
 
 begin 
  se_out(8 downto 0) <= se_in(8 downto 0); 
+se_out(15) <= se_in(8);
 se_out(14) <= se_in(8); 
 se_out(13) <= se_in(8);
 se_out(12) <= se_in(8); 

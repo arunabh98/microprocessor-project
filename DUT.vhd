@@ -8,7 +8,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity DUT is
-   port(input_vector: in std_logic_vector(5 downto 0); ---Note: for alu testing (17 downto 0) for others (15 downto 0)
+   port(input_vector: in std_logic_vector(8 downto 0); ---Note: for alu testing (17 downto 0) for others (15 downto 0)
        	output_vector: out std_logic_vector(15 downto 0));
 end entity;
 
@@ -36,8 +36,8 @@ architecture DutWrap of DUT is
 --		z: out std_logic_vector(15 downto 0));
 --end component;
 
-component se10 is 
-	port( se_in : in std_logic_vector(5 downto 0);
+component se7 is 
+	port( se_in : in std_logic_vector(8 downto 0);
 		  se_out: out std_logic_vector(15 downto 0));
 end component;
 
@@ -46,6 +46,7 @@ begin
 --dut_in: SixteenBitSub port map(x => input_vector(32 downto 17), y => input_vector(16 downto 1), bor_in => input_vector(0), z => output_vector(16 downto 1), bor_out => output_vector(0));
 --dut_in: SixteenBitNand port map( x => input_vector(32 downto 17), y => input_vector(16 downto 1) , z => output_vector(16 downto 1));
 
-dut_in: memory port map( Add_in => input_vector(33 downto 18), D_in => input_vector(17 downto 2), wr => input_vector(1), rd => input_vector(0) , Y_out => output_vector(15 downto 0));
+--dut_in: memory port map( Add_in => input_vector(33 downto 18), D_in => input_vector(17 downto 2), wr => input_vector(1), rd => input_vector(0) , Y_out => output_vector(15 downto 0));
+dut_in: se7 port map(se_in => input_vector(8 downto 0), se_out => output_vector(15 downto 0)); 
 
 end DutWrap;

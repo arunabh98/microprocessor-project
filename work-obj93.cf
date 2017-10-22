@@ -1,34 +1,37 @@
 v 3
-file . "DUT.vhd" "20171022214735.000" "20171023031740.456":
-  entity dut at 4( 115) + 0 on 407;
-  architecture dutwrap of dut at 15( 401) + 0 on 408;
-file . "se10.vhd" "20171022211816.000" "20171023031740.410":
-  entity se10 at 2( 2) + 1 on 405;
-  architecture behave_se10 of se10 at 13( 208) + 0 on 406;
-file . "my_alu.vhd" "20171022211111.000" "20171023031740.201":
-  entity alu at 1( 0) + 0 on 399;
-  architecture alu_behave of alu at 14( 274) + 0 on 400;
-file . "16bit_nand.vhd" "20171022204612.000" "20171023031740.157":
-  entity sixteenbitnand at 1( 0) + 0 on 397;
-  architecture comp_nand of sixteenbitnand at 9( 168) + 0 on 398;
-file . "subtractor.vhd" "20171022214303.000" "20171023031740.112":
-  entity subtractor at 1( 0) + 0 on 395;
-  architecture form of subtractor at 9( 133) + 0 on 396;
-file . "full_adder.vhd" "20171022213228.000" "20171023031740.065":
-  entity full_adder at 1( 0) + 0 on 393;
-  architecture form of full_adder at 9( 133) + 0 on 394;
-file . "16bit_adder.vhd" "20171022204642.000" "20171023031739.909":
-  entity sixteenbitadder at 1( 0) + 0 on 389;
-  architecture summer of sixteenbitadder at 11( 266) + 0 on 390;
-file . "16bit_sub.vhd" "20171022204727.000" "20171023031739.990":
-  entity sixteenbitsub at 1( 0) + 0 on 391;
-  architecture diff of sixteenbitsub at 11( 264) + 0 on 392;
-file . "se7.vhd" "20171022211816.000" "20171023031740.371":
-  entity se7 at 2( 2) + 1 on 403;
-  architecture behave_se7 of se7 at 13( 207) + 0 on 404;
-file . "rf.vhd" "20171022211816.000" "20171023031740.296":
-  entity rf at 4( 3) + 0 on 401;
-  architecture rf_behave of rf at 20( 335) + 0 on 402;
-file . "Testbench.vhd" "20171022213430.000" "20171023031740.490":
-  entity testbench at 1( 0) + 0 on 409;
-  architecture behave of testbench at 12( 146) + 0 on 410;
+file . "memory.vhd" "20171022223830.000" "20171023040833.154":
+  entity memory at 1( 0) + 0 on 743;
+  architecture memory_behave of memory at 14( 282) + 0 on 744;
+file . "DUT.vhd" "20171022223237.000" "20171023040833.105":
+  entity dut at 4( 115) + 0 on 741;
+  architecture dutwrap of dut at 15( 401) + 0 on 742;
+file . "se10.vhd" "20171022211816.000" "20171023040833.062":
+  entity se10 at 2( 2) + 1 on 739;
+  architecture behave_se10 of se10 at 13( 208) + 0 on 740;
+file . "my_alu.vhd" "20171022211111.000" "20171023040832.837":
+  entity alu at 1( 0) + 0 on 733;
+  architecture alu_behave of alu at 14( 274) + 0 on 734;
+file . "16bit_nand.vhd" "20171022204612.000" "20171023040832.800":
+  entity sixteenbitnand at 1( 0) + 0 on 731;
+  architecture comp_nand of sixteenbitnand at 9( 168) + 0 on 732;
+file . "subtractor.vhd" "20171022214303.000" "20171023040832.760":
+  entity subtractor at 1( 0) + 0 on 729;
+  architecture form of subtractor at 9( 133) + 0 on 730;
+file . "full_adder.vhd" "20171022213228.000" "20171023040832.707":
+  entity full_adder at 1( 0) + 0 on 727;
+  architecture form of full_adder at 9( 133) + 0 on 728;
+file . "16bit_adder.vhd" "20171022204642.000" "20171023040832.549":
+  entity sixteenbitadder at 1( 0) + 0 on 723;
+  architecture summer of sixteenbitadder at 11( 266) + 0 on 724;
+file . "16bit_sub.vhd" "20171022204727.000" "20171023040832.629":
+  entity sixteenbitsub at 1( 0) + 0 on 725;
+  architecture diff of sixteenbitsub at 11( 264) + 0 on 726;
+file . "se7.vhd" "20171022211816.000" "20171023040833.009":
+  entity se7 at 2( 2) + 1 on 737;
+  architecture behave_se7 of se7 at 13( 207) + 0 on 738;
+file . "rf.vhd" "20171022211816.000" "20171023040832.940":
+  entity rf at 4( 3) + 0 on 735;
+  architecture rf_behave of rf at 20( 335) + 0 on 736;
+file . "Testbench.vhd" "20171022220959.000" "20171023040833.223":
+  entity testbench at 1( 0) + 0 on 745;
+  architecture behave of testbench at 12( 146) + 0 on 746;

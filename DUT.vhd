@@ -13,7 +13,6 @@ entity DUT is
 end entity;
 
 architecture DutWrap of DUT is
-	
 --component alu is 
 --	port( X,Y : in std_logic_vector(7 downto 0); x0,x1 : in std_logic ; Z : out std_logic_vector(7 downto 0));
 --end component;

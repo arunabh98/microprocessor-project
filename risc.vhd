@@ -37,9 +37,9 @@ end component;
 
 component rf is 
 	port( A1,A2,A3 : in std_logic_vector(2 downto 0);
-		  D3: in std_logic_vector(15 downto 0);
+		  D3, D_PC: in std_logic_vector(15 downto 0);
 		  
-		clk,wr: in std_logic ;
+		clk,wr, pc_wr: in std_logic ;
 		D1, D2: out std_logic_vector(15 downto 0));
 end component;
 
@@ -73,8 +73,8 @@ end component;
 
 
 signal state, next_state : std_logic_vector(4 downto 0) := "00000";
-signal t1_en, t2_en, t3_en, a_en, c_en, ir_en, rwr, car_in, car_out, z_out, alu_op0, alu_op1, mem_wr, mem_rd, pe_fail, zero_in, zero_out, zero_en, carry_in, carry_out, carry_en, se7_type : std_logic := '0';
-signal t1_in, t1_out, t2_in, t2_out, t3_in, t3_out, a_in, a_out, c_in, c_out, ir_in, ir_out, rD1, rD2, rD3, alu_x, alu_y, alu_out, mem_a, mem_din, mem_dout, const_one, se7_out, se10_out : std_logic_vector(15 downto 0) := "0000000000000000";
+signal t1_en, t2_en, t3_en, a_en, c_en, ir_en, rwr, car_in, car_out, z_out, alu_op0, alu_op1, mem_wr, mem_rd, pe_fail, zero_in, zero_out, zero_en, carry_in, carry_out, carry_en, se7_type, r_pc_wr : std_logic := '0';
+signal t1_in, t1_out, t2_in, t2_out, t3_in, t3_out, a_in, a_out, c_in, c_out, ir_in, ir_out, rD1, rD2, rD3, alu_x, alu_y, alu_out, mem_a, mem_din, mem_dout, const_one, se7_out, se10_out, rD_PC : std_logic_vector(15 downto 0) := "0000000000000000";
 signal rA1, rA2, rA3, pe_out : std_logic_vector(2 downto 0) := "000";
 signal op_code : std_logic_vector(3 downto 0);
 signal se7_in : std_logic_vector(8 downto 0);
@@ -99,7 +99,7 @@ se10_inst : se10 port map (se10_in, se10_out);
 
 
 pe_main : pr_encoder port map (pe_in, pe_out, pe_fail);
-rf_main : rf port map (rA1, rA2, rA3, rD3, clock, rwr, rD1, rD2);
+rf_main : rf port map (rA1, rA2, rA3, rD3, rD_PC, clock, rwr, r_pc_wr, rD1, rD2);
 alu_main : alu port map (alu_x, alu_y, alu_op0, alu_op1, car_in, car_out, z_out, alu_out);
 mem_main : memory port map (mem_wr, mem_rd, mem_a, mem_din, mem_dout);
 
@@ -186,6 +186,7 @@ begin
    		c_en <= '0'; 
    		t1_en <= '1';
    		t2_en <= '1';
+      t3_en <= '0';
    		rA1 <= ir_out(11 downto 9); 
    		rA2 <= ir_out(8 downto 6); 
 
@@ -216,6 +217,8 @@ begin
    		alu_y <= t2_out; 
    		t3_en <= '1';
    		t3_in <= alu_out;
+      t1_en <= '0';
+      t2_en <= '0';
 
 
     	-- state multiplexing 
@@ -233,9 +236,12 @@ begin
     		next_state <= "00100";  
     		zero_en <= '1'; 
     		zero_in <= z_out; 
+        carry_en <= '0';
     		alu_op0 <= '0';
-   			alu_op1 <= '1';  
+   			alu_op1 <= '1';
     	elsif ((op_code(3 downto 0) = "1100")) then 
+        zero_en <= '0';
+        carry_en <= '0';
     		if (zero_out = '0') then
     			next_state <= "01101"; 
     		else 
@@ -251,10 +257,12 @@ begin
    		ir_en <= '0';
    		a_en <= '0';
    		c_en <= '0'; 
-
    		zero_en <= '0';
    		carry_en <= '0';
-     
+      t1_en <= '0';
+      t2_en <= '0';
+      t3_en <= '0'; 
+
     	 if ((ir_out(1 downto 0) = "00") and (op_code(3 downto 0) = "0000")) then  --  ADD
      		rwr <= '1'; 
      		rD3 <= t3_out; 
@@ -331,8 +339,12 @@ begin
    		c_en <= '0'; 
    		alu_x <= t1_out; 
    		alu_y <= se10_out; 
-   		t3_en <= '1';
+   		t3_en <= '0';
    		t3_in <= alu_out;
+      t1_en <= '0';
+      t2_en <= '0';
+      zero_en <= '0';
+      carry_en <= '0';
 
    		if (op_code(3 downto 0) = "0001") then
    			next_state <= "00100";
@@ -351,7 +363,12 @@ begin
    		ir_en <= '0'; 
    		rwr <= '0';
    		a_en <= '0';
-   		c_en <= '0';  
+   		c_en <= '0';
+      t1_en <= '0';
+      t2_en <= '0';
+      t3_en <= '0'; 
+      zero_en <= '0';
+      carry_en <= '0';
 
    	elsif (state = "00111") then -- STATE 7
 
@@ -362,6 +379,11 @@ begin
    		c_en <= '0'; 
    		se7_type <= '0';  
    		rwr <= '1';
+      t1_en <= '0';
+      t2_en <= '0';
+      t3_en <= '0'; 
+      zero_en <= '0';
+      carry_en <= '0';
    		rD3 <= se7_out; 
    		rA3 <= ir_out(11 downto 9); 
    		next_state <= "00001"; 
@@ -373,7 +395,12 @@ begin
    		mem_a <= t3_out; 
    		ir_en <= '0'; 
    		a_en <= '0';
-   		c_en <= '0'; 
+   		c_en <= '0';
+      t1_en <= '0';
+      t2_en <= '0';
+      t3_en <= '0'; 
+      zero_en <= '0';
+      carry_en <= '0';
    		rwr <= '1';
    		rD3 <= mem_dout; 
    		rA3 <= ir_out(11 downto 9); 
@@ -394,6 +421,10 @@ begin
    		t3_en <= '1';
    		t3_in <= alu_out; 
    		a_in <= alu_out;
+      t1_en <= '0';
+      t2_en <= '0';
+      zero_en <= '0';
+      carry_en <= '0';
    		next_state <= "01010"; 
 
    	elsif (state = "01010") then-- STATE 10 
@@ -405,6 +436,11 @@ begin
    		a_en <= '0';
    		c_en <= '0';
    		rwr <= '1';
+      t1_en <= '0';
+      t2_en <= '0';
+      t3_en <= '0'; 
+      zero_en <= '0';
+      carry_en <= '0';
    		rD3 <= c_out;
    		rA3 <= pe_out; 
    		if(pe_fail = '1') then
@@ -424,7 +460,12 @@ begin
    		rA2 <= ir_out(11 downto 9);
    		a_en <= '1';
    		a_in <= rD2; 
-   		c_en <= '0'; 
+   		c_en <= '0';
+      t1_en <= '0';
+      t2_en <= '0';
+      t3_en <= '0'; 
+      zero_en <= '0';
+      carry_en <= '0';
    		next_state <= "01100"; 
 
    	elsif (state = "01100")  then -- STATE 12
@@ -440,7 +481,11 @@ begin
    		alu_x <= a_out; 
    		alu_y <= "0000000000000001"; 
    		t3_en <= '1';
-   		t3_in <= alu_out; 
+   		t3_in <= alu_out;
+      t1_en <= '0';
+      t2_en <= '0';
+      zero_en <= '0';
+      carry_en <= '0';
    		
    		if(pe_fail = '1') then
    			next_state <= "00001";
@@ -453,29 +498,37 @@ begin
    		-- common signals for all instructions 
    		mem_wr <= '0';
    		a_en <= '0';
-   	    c_en <= '0';
+   	  c_en <= '0';
    		ir_en <= '0';
    		rwr <= '0';
-   		
+      t1_en <= '0';
+      t2_en <= '0';
+      t3_en <= '0'; 
+      zero_en <= '0';
+      carry_en <= '0';
    		rA1 <= "111"; -- PC is required
    		rA3 <= "111"; -- writing to PC
    	    
-   	    alu_x <= rD1; 
-   	    alu_y <= se10_out;
+ 	    alu_x <= rD1; 
+ 	    alu_y <= se10_out;
 
-   	    rD3 <= alu_out; 
-   	    next_state <= "00001";
+ 	    rD3 <= alu_out; 
+ 	    next_state <= "00001";
 
    	elsif (state = "01110") then  -- STATE 14 
 
    		-- common signals for all instructions 
    		mem_wr <= '0';
    		a_en <= '0';
-   	    c_en <= '0';
+   	  c_en <= '0';
    		ir_en <= '0';
    		rwr <= '0';
    		se7_type <= '1';
-   		
+      t1_en <= '0';
+      t2_en <= '0';
+      t3_en <= '0'; 
+      zero_en <= '0';
+      carry_en <= '0';
    		rA1 <= "111"; -- PC is required
    		rA3 <= "111"; -- writing to PC
    	    
@@ -485,13 +538,26 @@ begin
    	    rD3 <= alu_out; 
    	    next_state <= "00001";
 
-   	--elsif (state = "01111") then -- STATE 15  WE NEED AN EXTRA STATE
+   	elsif (state = "01111") then -- STATE 15
+   		
+      mem_wr <= '0';
+      ir_en <= '0';
+      rwr <= '1';
+      r_pc_wr <= '1';
+      rD_PC <= rD2;
+      rA2 <= ir_out(8 downto 6);
+      rA3 <= ir_out(11 downto 9);
+      t3_in <= rD3;
+      t3_en <= '1';
+      t1_en <= '0';
+      t2_en <= '0';
+      a_en <= '0';
+      c_en <= '0';
+      zero_en <= '0';
+      carry_en <= '0';
 
-   		---- common signals for all instructions
-   		--mem_wr <= '0';
-   		--ir_en <= '0';
-   		--rA3 <= "111";
-   		--rD3 <=  
+      next_state <= "00001";
+
 
    	elsif (state = "10000") then -- STATE 16 
 
@@ -503,6 +569,11 @@ begin
    		a_en <= '1';
    		a_in <= rD2; 
    		c_en <= '0';
+      t1_en <= '0';
+      t2_en <= '0';
+      t3_en <= '0'; 
+      zero_en <= '0';
+      carry_en <= '0';
    		next_state <= "01001";
 
    	end if;
@@ -511,15 +582,15 @@ begin
 
 	pe_in <= ir_out(7 downto 0);
 	state <= next_state;
-   	mem_rd <= '1'; 
+  mem_rd <= '1'; 
 	ir_in <= mem_dout;
 	const_one <= "0000000000000001";
 	op_code <= ir_out(15 downto 12); 
 	se7_in <= ir_out(8 downto 0);  -- some discrepancy confirm with shashwat 
 	se10_in <= ir_out(5 downto 0);
 
-	--Y_main(9 downto 5) <= state; -- Output of the RISC is the current and next state
-	--Y_main(4 downto 0) <= next_state;
+	Y_main(9 downto 5) <= state; -- Output of the RISC is the current and next state
+	Y_main(4 downto 0) <= next_state;
 end process;
 
 

@@ -8,9 +8,9 @@ use ieee.numeric_std.all;
 
 entity rf is 
 	port( A1,A2,A3 : in std_logic_vector(2 downto 0);
-		  D3: in std_logic_vector(15 downto 0);
+		  D3, D_PC: in std_logic_vector(15 downto 0);
 		  
-		clk,wr: in std_logic ; -- No separate control for PC required; simply drive 111 to A_
+		clk,wr, pc_wr: in std_logic ; -- No separate control for PC required; simply drive 111 to A_
 		D1, D2: out std_logic_vector(15 downto 0));
 end entity;
 
@@ -30,6 +30,9 @@ begin
  
 	   	if (wr = '1') then
 		 	registers(to_integer(unsigned(A3))) <= D3; 
+	   		if (pc_wr = '1') then
+	   			registers(7) <= D_PC;
+	   		end if;
 	   	end if;
 	end if;
 

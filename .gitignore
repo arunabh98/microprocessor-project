@@ -1,4 +1,5 @@
-# GHDL Files
+# VHDL
 *.o
+*.bak
 *.cf
 *~

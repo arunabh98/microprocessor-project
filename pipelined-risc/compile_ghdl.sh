@@ -13,3 +13,5 @@ ghdl -a se10.vhd
 ghdl -a memory.vhd
 ghdl -a priority_encoder.vhd
 ghdl -a pipeline-bank.vhdl
+ghdl -a decoder.vhd
+ghdl -a prisc.vhd

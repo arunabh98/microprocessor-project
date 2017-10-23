@@ -9,8 +9,8 @@ use ieee.std_logic_1164.all;
 
 entity risc is
 	port (	
-			X_main : in std_logic_vector(32 downto 0);
-			clock : in std_logic;
+			-- X_main : in std_logic_vector(32 downto 0);
+      X_main, clock : in std_logic;
 			Y_main : out std_logic_vector(9 downto 0)); -- Stores the current state
 end entity;
 
@@ -121,7 +121,7 @@ begin
     t2_en <= '0';
     t3_en <= '0';
 
-		if (X_main(0) = '1') then
+		if (X_main = '1') then
 			next_state <= "00001";
 		else
 			next_state <= "00000";
@@ -595,8 +595,8 @@ begin
 	op_code <= ir_out(15 downto 12); 
 	se7_in <= ir_out(8 downto 0);  -- some discrepancy confirm with shashwat 
 	se10_in <= ir_out(5 downto 0);
-  rf_rst <= not X_main(0);
-  mem_init <= not X_main(0);
+  rf_rst <= not X_main;
+  mem_init <= not X_main;
 	Y_main(9 downto 5) <= state; -- Output of the RISC is the current and next state
 	Y_main(4 downto 0) <= next_state;
 end process;

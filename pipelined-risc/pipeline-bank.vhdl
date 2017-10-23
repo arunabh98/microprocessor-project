@@ -4,8 +4,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity pipe is
-	port ( X : in std_logic_vector(114 downto 0);
-		Y : out std_logic_vector(114 downto 0);
+	port ( ir_in, npc_in, t1_in, t2_in, t3_in, memd_in : in std_logic_vector(15 downto 0);
+		ir_out, npc_out, t1_out, t2_out, t3_out, memd_out : out std_logic_vector(15 downto 0);
+		contr_in : in std_logic_vector(18 downto 0);
+		contr_out : out std_logic_vector(18 downto 0);
 		pipe_en : in std_logic;
 		clk : in std_logic);
 end entity;
@@ -19,31 +21,23 @@ architecture pipe_behave of pipe is
 	    clk     : in  std_logic);
 	end component;
 
-	component dregister_2 is
+	component dregister_19 is
 	  port (
-	    din  : in  std_logic_vector(1 downto 0);
-	    dout : out std_logic_vector(1 downto 0);
+	    din  : in  std_logic_vector(18 downto 0);
+	    dout : out std_logic_vector(18 downto 0);
 	    enable: in std_logic;
 	    clk     : in  std_logic);
 	end component;
 
-	component dregister_1 is
-	  port (
-	    din  : in  std_logic(15 downto 0);
-	    dout : out std_logic(15 downto 0);
-	    enable: in std_logic;
-	    clk     : in  std_logic);
-	end component;
 
 begin
 
-	ir: dregister port map (X(114 downto 99), Y(114 downto 99), pipe_en, clk);
-	npc: dregister port map (X(98 downto 83), Y(98 downto 83), pipe_en, clk);
-	ir: dregister port map (X(114 downto 99), Y(114 downto 99), pipe_en, clk);
-	t1: dregister port map (X(82 downto 67), Y(82 downto 67), pipe_en, clk);
-	t2: dregister port map (X(66 downto 51), Y(66 downto 51), pipe_en, clk);
-	t3: dregister port map (X(50 downto 35), Y(50 downto 35), pipe_en, clk);
-	memd: dregister port map (X(34 downto 19), Y(34 downto 19), pipe_en, clk);
-	contr: dregister port map (X(18 downto 0), Y(18 downto 0), pipe_en, clk);
+	ir: dregister port map (ir_in, ir_out, pipe_en, clk);
+	npc: dregister port map (npc_in, npc_out, pipe_en, clk);
+	t1: dregister port map (t1_in, t1_out, pipe_en, clk);
+	t2: dregister port map (t2_in, t2_out, pipe_en, clk);
+	t3: dregister port map (t3_in, t3_out, pipe_en, clk);
+	memd: dregister port map (memd_in, memd_out, pipe_en, clk);
+	contr: dregister_19 port map (contr_in, contr_out, pipe_en, clk);
 	
 end pipe_behave;

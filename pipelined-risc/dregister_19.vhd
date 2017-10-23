@@ -6,15 +6,15 @@ library ieee;
 use ieee.numeric_std.all; 
 
 
-entity dregister_2 is                 -- no. of bits
+entity dregister_19 is                 -- no. of bits
   port (
-    din  : in  std_logic_vector(1 downto 0);
-    dout : out std_logic_vector(1 downto 0);
+    din  : in  std_logic_vector(18 downto 0);
+    dout : out std_logic_vector(18 downto 0);
     enable: in std_logic;
     clk     : in  std_logic);
-end dregister_2;
+end dregister_19;
 
-architecture behave of dregister_2 is
+architecture behave of dregister_19 is
 
 begin  -- behave
 process(clk)

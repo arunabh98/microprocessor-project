@@ -10,9 +10,6 @@ ghdl -a my_alu.vhd
 ghdl -a rf.vhd
 ghdl -a se7.vhd
 ghdl -a se10.vhd
-ghdl -a DUT.vhd
 ghdl -a memory.vhd
-ghdl -a risc_standalone.vhd
 ghdl -a priority_encoder.vhd
-ghdl -a Testbench.vhd
-ghdl -m Testbench
+ghdl -a pipeline-bank.vhdl

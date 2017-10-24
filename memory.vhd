@@ -12,7 +12,7 @@ entity memory is
 			Add_in,D_in: in std_logic_vector(15 downto 0);
 			Y_out: out std_logic_vector(15 downto 0)); 
 
-	end entity; 
+end entity; 
 
 	architecture memory_behave of memory is 
 		begin
@@ -34,7 +34,7 @@ entity memory is
 
 		end process; 
 		end memory_behave;
-		
+
 
 
 

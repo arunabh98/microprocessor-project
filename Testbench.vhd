@@ -11,8 +11,8 @@ entity Testbench is
 end entity;
 architecture Behave of Testbench is
 
-  constant number_of_inputs  : integer := 33;  -- # input bits to your design. 
-  constant number_of_outputs : integer := 17;  -- # output bits from your design.
+  constant number_of_inputs  : integer := 34;  -- # input bits to your design. 
+  constant number_of_outputs : integer := 16;  -- # output bits from your design.
 
   component DUT is
    port(input_vector: in std_logic_vector(number_of_inputs-1  downto 0);    
@@ -35,8 +35,8 @@ architecture Behave of Testbench is
 begin
   process 
     variable err_flag : boolean := false;
-    File INFILE: text open read_mode is "tracefiles/alu_TRACEFILE.txt";
-    FILE OUTFILE: text  open write_mode is "tracefiles/alu_OUTPUTS.txt";
+    File INFILE: text open read_mode is "tracefiles/mem_TRACEFILE.txt";
+    FILE OUTFILE: text  open write_mode is "tracefiles/mem_OUTPUTS.txt";
 
     variable input_vector_var: bit_vector (number_of_inputs-1 downto 0);
     variable output_vector_var: bit_vector (number_of_outputs-1 downto 0);

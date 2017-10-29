@@ -1,6 +1,3 @@
-
-
-
 library std;
 use std.standard.all;
 library ieee;
@@ -27,22 +24,21 @@ begin
 process (clk)
 begin 
 	if(clk'event and clk = '1') then
-		
-		D2 <= registers(to_integer(unsigned(A2)));
-	    D1 <= registers(to_integer(unsigned(A1)));
 
-		if(pc_read ='1') then 
-			 D1 <= registers(7);
-		end if; 
+		if (pc_read ='1') then 
+			D1 <= registers(7);
+		else
+			D1 <= registers(to_integer(unsigned(A1)));
+			D2 <= registers(to_integer(unsigned(A2)));
+		end if;
 
-		if (wr = '1') then
-		 	 registers(to_integer(unsigned(A3))) <= D3; 
-			if (pc_wr = '1') then  
-			  registers(7) <= D3;  
-	   		 end if; 
-		end if; 
+		if(pc_wr = '1') then
+			registers(7) <= D3;  
+	   	elsif (wr = '1') then -- Confirm that RF write and PC write never occur in same state
+		 	registers(to_integer(unsigned(A3))) <= D3; 
+	   	 end if;
+	end if;
 
-	end if; 
 end process;
 end rf_behave;
 	    

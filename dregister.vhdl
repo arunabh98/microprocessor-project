@@ -1,11 +1,17 @@
-entity dregister is
-  generic (
-    nbits : integer);                    -- no. of bits
+library std;
+use std.standard.all;
+library ieee;
+use ieee.std_logic_1164.all;
+library ieee;
+use ieee.numeric_std.all; 
+
+
+entity dregister is                 -- no. of bits
   port (
-    din  : in  bit_vector(nbits-1 downto 0);
-    dout : out bit_vector(nbits-1 downto 0);
-    enable: in bit;
-    clk     : in  bit);
+    din  : in  std_logic_vector(15 downto 0);
+    dout : out std_logic_vector(15 downto 0);
+    enable: in std_logic;
+    clk     : in  std_logic);
 end dregister;
 
 architecture behave of dregister is

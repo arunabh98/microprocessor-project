@@ -8,7 +8,6 @@ entity memory is
 	port ( wr,rd : in std_logic; 
 			Add_in, D_in: in std_logic_vector(15 downto 0);
 			Y_out: out std_logic_vector(15 downto 0)); 
-
 end entity; 
 
 architecture memory_behave of memory is 

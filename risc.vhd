@@ -9,9 +9,9 @@ use ieee.std_logic_1164.all;
 
 entity risc is
 	port (	
-			X_main : in std_logic_vector(33 downto 0);
+			X_main : in std_logic_vector(32 downto 0);
 			clock : in std_logic;
-			Y_main : out std_logic_vector(3 downto 0)); -- Stores the current state
+			Y_main : out std_logic_vector(7 downto 0)); -- Stores the current state
 end entity;
 
 architecture risc_proc of risc is
@@ -80,6 +80,28 @@ ir: dregister port map (ir_in, ir_out, ir_en, clock);
 rf_main : rf port map (rA1, rA2, rA3, rD3, clock, rwr, pc_wr, pc_rd, rD1, rD2);
 alu_main : alu port map (alu_x, alu_y, alu_op0, alu_op1, car_in, car_out, z_out, alu_out);
 mem_main : memory port map (mem_wr, mem_rd, mem_a, mem_din, mem_dout);
+
+process (X_main, clock)
+begin
+
+	if (state = "0000") then
+		mem_a <= X_main(32 downto 17);
+		mem_din <= X_main(16 downto 1);
+		mem_wr <= '1';
+		mem_rd <= '0';
+
+		if (X_main(0) = '1') then
+			next_state <= "0001";
+		else
+			next_state <= "0000";
+		end if;
+	end if;
+
+
+	state <= next_state;
+	Y_main <= state & next_state;
+
+end process;
 
 
 end risc_proc;

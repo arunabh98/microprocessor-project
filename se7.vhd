@@ -17,7 +17,7 @@ begin
 
 process (se_in, se_type)
 begin
-	if (se_type = '1')
+	if (se_type = '1') then
 	-- Normal SE
 		se_out(8 downto 0) <= se_in(8 downto 0); 
 		se_out(15) <= se_in(8);
@@ -27,7 +27,7 @@ begin
 		se_out(11) <= se_in(8);
 		se_out(10) <= se_in(8);
 		se_out(9) <= se_in(8);
-	elsif (se_type = '0')
+	elsif (se_type = '0') then
 		se_out(15 downto 7) <= se_in(8 downto 0); 
 		se_out(6 downto 0) <= "0000000";
 	end if;

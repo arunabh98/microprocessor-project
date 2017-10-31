@@ -197,10 +197,10 @@ begin
 
    		-- state multiplexing 
 
-   		if ((op_code(3 downto 0) = "0000") or (op_code(3 downto 0) = "0010") or (op_code(3 downto 0) = "1100"))
+   		if ((op_code(3 downto 0) = "0000") or (op_code(3 downto 0) = "0010") or (op_code(3 downto 0) = "1100")) then
    			-- Go to state 3 
    			next_state <= "00011"; 
-   		elsif ((op_code(3 downto 0) = "0001") or (op_code(3 downto 1) = "010") or (op_code(3 downto 0) = "1100"))
+   		elsif ((op_code(3 downto 0) = "0001") or (op_code(3 downto 1) = "010") or (op_code(3 downto 0) = "1100")) then
    			-- Go to state 5 
    			next_state <="00101"; 
    		end if; 
@@ -225,8 +225,8 @@ begin
     		next_state <= "00100";  
     		zero_en <= '1'; 
     		zero_in <= z_out; 
-    		carry_en <=1; 
-    		carry_in <= c_out; 
+    		carry_en <= '1'; 
+    		carry_in <= car_out; 
     		alu_op0 <= '1';
    			alu_op1 <= '1';  
     	elsif ((op_code(3 downto 0) = "0010")) then 
@@ -236,7 +236,7 @@ begin
     		alu_op0 <= '0';
    			alu_op1 <= '1';  
     	elsif ((op_code(3 downto 0) = "1100")) then 
-    		if (zero_out = '0')
+    		if (zero_out = '0') then
     			next_state <= "01101"; 
     		else 
     			next_state <= "00001";
@@ -264,7 +264,7 @@ begin
         elsif ((ir_out(1 downto 0) = "10") and (op_code(3 downto 0) = "0000")) then  -- ADC
         	rwr <= carry_out; 
      		
-     		if (carry_out = '1')
+     		if (carry_out = '1') then
      			rD3 <= t3_out;
      		end if; 
    
@@ -274,7 +274,7 @@ begin
         elsif ((ir_out(1 downto 0) = "01") and (op_code(3 downto 0) = "0000")) then  -- ADZ
         	rwr <= zero_out; 
      		
-     		if (zero_out = '1')
+     		if (zero_out = '1') then
      			rD3 <= t3_out;
      		end if; 
    
@@ -296,7 +296,7 @@ begin
         elsif ((ir_out(1 downto 0) = "10") and (op_code(3 downto 0) = "0010")) then  -- NDC
         	rwr <= carry_out; 
      		
-     		if (carry_out = '1')
+     		if (carry_out = '1') then
      			rD3 <= t3_out;
      		end if; 
    
@@ -306,7 +306,7 @@ begin
         elsif ((ir_out(1 downto 0) = "01") and (op_code(3 downto 0) = "0010")) then  -- NDZ
         	rwr <= zero_out; 
      		
-     		if (zero_out = '1')
+     		if (zero_out = '1') then
      			rD3 <= t3_out;
      		end if; 
    
@@ -321,7 +321,7 @@ begin
 
 		end if;  
 
-	elsif (state = "00101")
+	elsif (state = "00101")  then --STATE 5
 
 		-- common signals for all instructions 
    		mem_wr <= '0';
@@ -334,15 +334,15 @@ begin
    		t3_en <= '1';
    		t3_in <= alu_out;
 
-   		if (op_code(3 downto 0) = "0001")
+   		if (op_code(3 downto 0) = "0001") then
    			next_state <= "00100";
-   		elsif (op_code(3 downto 0) = "0100")
+   		elsif (op_code(3 downto 0) = "0100") then
    			next_state <= "01000"; 
-   		elsif (op_code(3 downto 0) = "0101")
+   		elsif (op_code(3 downto 0) = "0101") then
    			next_state <= "00110";
    		end if; 
 
-   	elsif (state = "00110") 
+   	elsif (state = "00110") then -- STATE 6
 
    		-- common signals for all instructions 
    		mem_wr <= '1';
@@ -353,7 +353,7 @@ begin
    		a_en <= '0';
    		c_en <= '0';  
 
-   	elsif (state = "00111") 
+   	elsif (state = "00111") then -- STATE 7
 
    		-- common signals for all instructions 
    		mem_wr <= '0';
@@ -366,7 +366,7 @@ begin
    		rA3 <= ir_out(11 downto 9); 
    		next_state <= "00001"; 
 
-   	elsif (state = "01000")
+   	elsif (state = "01000") then-- STATE 8
 
    		-- common signals for all instructions 
    		mem_wr <= '0';
@@ -379,7 +379,7 @@ begin
    		rA3 <= ir_out(11 downto 9); 
    		next_state <= "00001";  
 
-   	elsif (state = "01001") 
+   	elsif (state = "01001")  then-- STATE 9 
 
    		--common signals for all instructions 
    		mem_wr <= '0';
@@ -390,16 +390,120 @@ begin
    		c_en <= '1'; 
    		c_in <= mem_dout; 
    		alu_x <= a_out;
-   		alu_y <= '1';
+   		alu_y <= "0000000000000001"; 
+   		t3_en <= '1';
+   		t3_in <= alu_out; 
    		a_in <= alu_out;
    		next_state <= "01010"; 
 
-   	--elsif (state = "01010") 
-   	-- elsif (state = "01011")
+   	elsif (state = "01010") then-- STATE 10 
+   		
+   		--common signals for all instructions 
+   		pe_in <= ir_out(7 downto 0);
+   		mem_wr <= '0';
+   		ir_en <= '0';
+   		a_en <= '0';
+   		c_en <= '0';
+   		rwr <= '1';
+   		rD3 <= c_out;
+   		rA3 <= pe_out; 
+   		if(pe_fail = '1') then
+   			next_state <= "00001";
+   		else 
+   			next_state <= "10000";
+   		end if; 
 
-   	-- elsif (state = )
+   	elsif (state = "01011") then -- STATE 11
 
+   		--common signals for all instructions 
+   		pe_in <= ir_out(7 downto 0);
+   		mem_wr <= '0';
+   		ir_en <= '0';
+   		rwr <= '0';
+   		rA1 <= pe_out; 
+   		rA2 <= ir_out(11 downto 9);
+   		a_en <= '1';
+   		a_in <= rD2; 
+   		c_en <= '0'; 
+   		next_state <= "01100"; 
 
+   	elsif (state = "01100")  then -- STATE 12
+
+   		--commong signals for all instructions
+   		mem_wr <= '1';
+   		mem_a <= a_out;
+   		ir_en <= '0';
+   		rwr <= '0';
+   		a_en <= '1';
+   		a_in <= alu_out;
+   		c_en <= '0'; 
+   		alu_x <= a_out; 
+   		alu_y <= "0000000000000001"; 
+   		t3_en <= '1';
+   		t3_in <= alu_out; 
+   		
+   		if(pe_fail = '1') then
+   			next_state <= "00001";
+   		else
+   			next_state <= "01011";
+   		end if;
+
+   	elsif (state = "01101") then -- STATE 13 
+
+   		-- common signals for all instructions 
+   		mem_wr <= '0';
+   		a_en <= '0';
+   	    c_en <= '0';
+   		ir_en <= '0';
+   		rwr <= '0';
+   		
+   		rA1 <= "111"; -- PC is required
+   		rA3 <= "111"; -- writing to PC
+   	    
+   	    alu_x <= rD1; 
+   	    alu_y <= se10_out;
+
+   	    rD3 <= alu_out; 
+   	    next_state <= "00001";
+
+   	elsif (state = "01110") then  -- STATE 14 
+
+   		-- common signals for all instructions 
+   		mem_wr <= '0';
+   		a_en <= '0';
+   	    c_en <= '0';
+   		ir_en <= '0';
+   		rwr <= '0';
+   		se7_type <= '1';
+   		
+   		rA1 <= "111"; -- PC is required
+   		rA3 <= "111"; -- writing to PC
+   	    
+   	    alu_x <= rD1; 
+   	    alu_y <= se7_out;
+
+   	    rD3 <= alu_out; 
+   	    next_state <= "00001";
+
+   	--elsif (state = "01111") then -- STATE 15  WE NEED AN EXTRA STATE
+
+   		---- common signals for all instructions
+   		--mem_wr <= '0';
+   		--ir_en <= '0';
+   		--rA3 <= "111";
+   		--rD3 <=  
+
+   	elsif (state = "10000") then -- STATE 16 
+
+   		-- common signal ki 
+   		mem_wr <= '0';
+   		ir_en <= '0';
+   		rwr <= '0';
+   		rA2 <= ir_out(11 downto 9);
+   		a_en <= '1';
+   		a_in <= rD2; 
+   		c_en <= '0';
+   		next_state <= "01001";
 
    	end if;
 	
@@ -411,11 +515,8 @@ begin
 	ir_in <= mem_dout;
 	const_one <= "0000000000000001";
 	op_code <= ir_out(15 downto 12); 
-	se7_in <= ir_out(9 downto 0);
+	se7_in <= ir_out(8 downto 0);  -- some discrepancy confirm with shashwat 
 	se10_in <= ir_out(5 downto 0);
-
- 	-- ADD SE7 and SE10 definitions 
- 
 
 	--Y_main(9 downto 5) <= state; -- Output of the RISC is the current and next state
 	--Y_main(4 downto 0) <= next_state;

@@ -1,3 +1,5 @@
+ghdl -a dregister_1.vhd
+ghdl -a dregister.vhd
 ghdl -a 16bit_adder.vhd
 ghdl -a 16bit_sub.vhd
 ghdl -a full_adder.vhd

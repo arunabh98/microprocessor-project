@@ -397,7 +397,7 @@ begin
    	--elsif (state = "01010") 
    	-- elsif (state = "01011")
 
-   	elsif (state = )
+   	-- elsif (state = )
 
 
 
@@ -412,7 +412,7 @@ begin
 	const_one <= "0000000000000001";
 	op_code <= ir_out(15 downto 12); 
 	se7_in <= ir_out(9 downto 0);
-	se10_out <= ir_out(5 downto 0);
+	se10_in <= ir_out(5 downto 0);
 
  	-- ADD SE7 and SE10 definitions 
  

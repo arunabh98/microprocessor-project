@@ -73,10 +73,12 @@ end component;
 
 
 signal state, next_state : std_logic_vector(4 downto 0) := "00000";
-signal t1_en, t2_en, t3_en, a_en, c_en, ir_en, rwr, car_in, car_out, z_out, alu_op0, alu_op1, mem_wr, mem_rd, pe_fail, zero_in, zero_out, zero_en, carry_in, carry_out, carry_en : std_logic := '0';
-signal t1_in, t1_out, t2_in, t2_out, t3_in, t3_out, a_in, a_out, c_in, c_out, ir_in, ir_out, rD1, rD2, rD3, alu_x, alu_y, alu_out, mem_a, mem_din, mem_dout, const_one : std_logic_vector(15 downto 0) := "0000000000000000";
+signal t1_en, t2_en, t3_en, a_en, c_en, ir_en, rwr, car_in, car_out, z_out, alu_op0, alu_op1, mem_wr, mem_rd, pe_fail, zero_in, zero_out, zero_en, carry_in, carry_out, carry_en, se7_type : std_logic := '0';
+signal t1_in, t1_out, t2_in, t2_out, t3_in, t3_out, a_in, a_out, c_in, c_out, ir_in, ir_out, rD1, rD2, rD3, alu_x, alu_y, alu_out, mem_a, mem_din, mem_dout, const_one, se7_out, se10_out : std_logic_vector(15 downto 0) := "0000000000000000";
 signal rA1, rA2, rA3, pe_out : std_logic_vector(2 downto 0) := "000";
 signal op_code : std_logic_vector(3 downto 0);
+signal se7_in : std_logic_vector(8 downto 0);
+signal se10_in : std_logic_vector(5 downto 0);
 signal pe_in : std_logic_vector(7 downto 0) := "00000000";
 
 
@@ -92,6 +94,8 @@ ir: dregister port map (ir_in, ir_out, ir_en, clock);
 z_flag: dregister_1 port map (zero_in, zero_out, zero_en, clock); 
 c_flag: dregister_1 port map (carry_in, carry_out, carry_en, clock); 
 
+se7_inst : se7 port map (se7_in, se7_type, se7_out);
+se10_inst : se10 port map (se10_in, se10_out);
 
 
 pe_main : pr_encoder port map (pe_in, pe_out, pe_fail);
@@ -338,7 +342,62 @@ begin
    			next_state <= "00110";
    		end if; 
 
-   	elsif (state = "00110")
+   	elsif (state = "00110") 
+
+   		-- common signals for all instructions 
+   		mem_wr <= '1';
+   		next_state <= "00001"; 
+   		mem_a <= t3_out;
+   		ir_en <= '0'; 
+   		rwr <= '0';
+   		a_en <= '0';
+   		c_en <= '0';  
+
+   	elsif (state = "00111") 
+
+   		-- common signals for all instructions 
+   		mem_wr <= '0';
+   		ir_en <= '0'; 
+   		a_en <= '0';
+   		c_en <= '0'; 
+   		se7_type <= '0';  
+   		rwr <= '1';
+   		rD3 <= se7_out; 
+   		rA3 <= ir_out(11 downto 9); 
+   		next_state <= "00001"; 
+
+   	elsif (state = "01000")
+
+   		-- common signals for all instructions 
+   		mem_wr <= '0';
+   		mem_a <= t3_out; 
+   		ir_en <= '0'; 
+   		a_en <= '0';
+   		c_en <= '0'; 
+   		rwr <= '1';
+   		rD3 <= mem_dout; 
+   		rA3 <= ir_out(11 downto 9); 
+   		next_state <= "00001";  
+
+   	elsif (state = "01001") 
+
+   		--common signals for all instructions 
+   		mem_wr <= '0';
+   		mem_a <= a_out; 
+   		ir_en <= '0';
+   		rwr <= '0';
+   		a_en <= '1';
+   		c_en <= '1'; 
+   		c_in <= mem_dout; 
+   		alu_x <= a_out;
+   		alu_y <= '1';
+   		a_in <= alu_out;
+   		next_state <= "01010"; 
+
+   	--elsif (state = "01010") 
+   	-- elsif (state = "01011")
+
+   	elsif (state = )
 
 
 
@@ -352,6 +411,8 @@ begin
 	ir_in <= mem_dout;
 	const_one <= "0000000000000001";
 	op_code <= ir_out(15 downto 12); 
+	se7_in <= ir_out(9 downto 0);
+	se10_out <= ir_out(5 downto 0);
 
  	-- ADD SE7 and SE10 definitions 
  

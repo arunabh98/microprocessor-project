@@ -4,6 +4,7 @@ library ieee;
 use ieee.std_logic_1164.all; 
 library ieee;
 use ieee.numeric_std.all; 
+
 entity memory is 
 	port ( wr,rd : in std_logic; 
 			Add_in, D_in: in std_logic_vector(15 downto 0);
@@ -20,7 +21,7 @@ architecture memory_behave of memory is
 		if(rd = '1') then
 			Y_out <= mem_reg(to_integer(unsigned(Add_in)));
 		elsif (rd = '0') then
-			Y_out <= "0000000000001100";
+			Y_out <= "0000000000000000";
 		end if;
 
 		if (wr = '1') then

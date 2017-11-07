@@ -161,7 +161,7 @@ begin
    		zero_en <= '0';
    		carry_en <= '0';
 
-   		if (op_code <= "0011") then
+   		if (op_code = "0011") then
    		   next_state <= "00111";
    		elsif ((op_code(3 downto 2) = "00") or (op_code(3 downto 1) = "010") or (op_code = "1100")) then
    			-- Go to state 2

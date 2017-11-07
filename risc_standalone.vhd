@@ -7,14 +7,14 @@ use std.standard.all;
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity risc is
+entity risc_standalone is
 	port (	
-			X_main : in std_logic_vector(32 downto 0);
-			clock : in std_logic;
+			-- X_main : in std_logic_vector(32 downto 0);
+      X_main, clock : in std_logic;
 			Y_main : out std_logic_vector(9 downto 0)); -- Stores the current state
 end entity;
 
-architecture risc_proc of risc is
+architecture risc_proc of risc_standalone is
 
 component alu is 
 	port( X,Y : in std_logic_vector(15 downto 0);
@@ -89,7 +89,7 @@ t3: dregister port map (t3_in, t3_out, t3_en, clock);
 
 a: dregister port map (a_in, a_out, a_en, clock);
 c: dregister port map (c_in, c_out, c_en, clock);
-ir: dregister port map (ir_in, ir_out, ir_en, clock); 
+ir: dregister port map (ir_in, ir_out, ir_en, clock); -- Ye nahi karna chaiye tha
 
 z_flag: dregister_1 port map (zero_in, zero_out, zero_en, clock); 
 c_flag: dregister_1 port map (carry_in, carry_out, carry_en, clock); 
@@ -103,16 +103,14 @@ rf_main : rf port map (rA1, rA2, rA3, rD3, rD_PC, clock, rwr, r_pc_wr, rf_rst, r
 alu_main : alu port map (alu_x, alu_y, alu_op0, alu_op1, car_in, car_out, z_out, alu_out);
 mem_main : memory port map (mem_wr, mem_rd, mem_init, mem_a, mem_din, mem_dout);
 
-process (X_main, clock)
+process (X_main, state, op_code, alu_out, mem_dout, rD1, rD2, t1_out, t2_out, t3_out, c_out, z_out, pe_out) -- Combinatorial logic
 begin
-   if(clock'event and clk = '1') then
+
 	if (state = "00000") then
 		--mem_a <= X_main(32 downto 17);
 		--mem_din <= X_main(16 downto 1);
 		mem_wr <= '0';
 		mem_rd <= '0';
-
-
 		zero_en <= '0';
 		carry_en <= '0';
     a_en <= '0';
@@ -121,7 +119,7 @@ begin
     t2_en <= '0';
     t3_en <= '0';
 
-		if (X_main(0) = '1') then
+		if (X_main = '1') then
 			next_state <= "00001";
 		else
 			next_state <= "00000";
@@ -133,6 +131,7 @@ begin
    		rA1 <= "111"; -- PC is required
    		mem_a <= rD1;
    		ir_en <= '1';
+   		r_pc_wr <= '0';
    		rwr <= '1';
    		alu_x <= rD1;
    		alu_y <= const_one;
@@ -147,7 +146,6 @@ begin
    		t3_en <= '1'; 
    		zero_en <= '0';
    		carry_en <= '0';
-
    		t3_in <= alu_out; 
    		
    		next_state <= "10001";
@@ -172,8 +170,8 @@ begin
    			else
    				next_state <= "10000";
    			end if;
-  		elsif (op_code = "0111") then
-  			if (pe_fail = '1') then
+  		   elsif (op_code = "0111") then
+  			   if (pe_fail = '1') then
    				next_state <= "00001";
    			else
    				next_state <= "01011";
@@ -182,7 +180,9 @@ begin
    			next_state <= "00100";
    		elsif (op_code = "1001") then
    			next_state <= "01111";
-   	   	end if;
+   		else
+   		   next_state <= "11111";
+   	   end if;
    	
    	elsif (state = "00010") then    -- STATE 
    		-- common signals for all instructions 
@@ -245,7 +245,7 @@ begin
     		zero_in <= z_out; 
         carry_en <= '0';
     		alu_op0 <= '0';
-   		alu_op1 <= '1';
+   			alu_op1 <= '1';
     	elsif ((op_code(3 downto 0) = "1100")) then 
         zero_en <= '0';
         carry_en <= '0';
@@ -261,11 +261,11 @@ begin
     elsif (state = "00100") then            -- STATE 4 
     	-- common signals for all instructions 
     	mem_wr <= '0';
-		ir_en <= '0';
-		a_en <= '0';
-		c_en <= '0'; 
-		zero_en <= '0';
-		carry_en <= '0';
+   		ir_en <= '0';
+   		a_en <= '0';
+   		c_en <= '0'; 
+   		zero_en <= '0';
+   		carry_en <= '0';
       t1_en <= '0';
       t2_en <= '0';
       t3_en <= '0'; 
@@ -566,7 +566,8 @@ begin
       next_state <= "00001";
 
 
-   	elsif (state = "10000") then -- STATE 16
+   	elsif (state = "10000") then -- STATE 16 
+
    		-- common signal ki 
    		mem_wr <= '0';
    		ir_en <= '0';
@@ -575,31 +576,35 @@ begin
    		a_en <= '1';
    		a_in <= rD2; 
    		c_en <= '0';
-         t1_en <= '0';
-         t2_en <= '0';
-         t3_en <= '0'; 
-         zero_en <= '0';
-         carry_en <= '0';
-      	next_state <= "01001";
+      t1_en <= '0';
+      t2_en <= '0';
+      t3_en <= '0'; 
+      zero_en <= '0';
+      carry_en <= '0';
+   		next_state <= "01001";
    	end if;
-	
-    
-
+   	
 	pe_in <= ir_out(7 downto 0);
-	state <= next_state;
-   mem_rd <= '1'; 
-	ir_in <= mem_dout;
 	const_one <= "0000000000000001";
-	op_code <= ir_out(15 downto 12); 
 	se7_in <= ir_out(8 downto 0);  -- some discrepancy confirm with shashwat 
 	se10_in <= ir_out(5 downto 0);
-  rf_rst <= not X_main(0);
-  mem_init <= not X_main(0);
+   rf_rst <= not X_main;
+   mem_init <= not X_main;
 	Y_main(9 downto 5) <= state; -- Output of the RISC is the current and next state
 	Y_main(4 downto 0) <= next_state;
-
-end if;
+	op_code <= ir_out(15 downto 12); 
+   mem_rd <= '1'; 
+	ir_in <= mem_dout;
 end process;
 
+
+
+process (clock, X_main)
+begin
+if (clock'event and clock = '1') then
+   state <= next_state;
+end if;
+
+end process;
 
 end risc_proc;

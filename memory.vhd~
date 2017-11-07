@@ -6,7 +6,7 @@ library ieee;
 use ieee.numeric_std.all; 
 
 entity memory is 
-	port ( wr,rd : in std_logic; 
+	port ( wr,rd, init : in std_logic; 
 			Add_in, D_in: in std_logic_vector(15 downto 0);
 			Y_out: out std_logic_vector(15 downto 0)); 
 end entity; 
@@ -15,13 +15,23 @@ architecture memory_behave of memory is
 	type registerFile is array(0 to ((2**4)-1)) of std_logic_vector(15 downto 0);
 	signal mem_reg: registerFile;
 	begin
-	process(wr, rd, Add_in, D_in)
+	process(init, wr, Add_in, D_in)
 		begin 
-
-		if(rd = '1') then
+		
+		if (init = '1') then
+			-- Initialise some memory
+         mem_reg(0) <= "0001000000000001"; -- ADDI
+         mem_reg(1) <= "0000000010111000"; -- ADD
+         mem_reg(2) <= "0001001000100001"; -- ADDI
+         mem_reg(3) <= "0001001100000001"; -- ADDI
+         
+			for i in 4 to 15 loop
+				mem_reg(i) <= "0000000000000000";
+			end loop;
+		elsif (rd = '1') then
 			Y_out <= mem_reg(to_integer(unsigned(Add_in(3 downto 0))));
 		elsif (rd = '0') then
-			Y_out <= "0000000000000000";
+			Y_out <= "1111111111111111";
 		end if;
 
 		if (wr = '1') then

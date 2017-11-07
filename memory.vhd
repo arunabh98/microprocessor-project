@@ -21,12 +21,12 @@ architecture memory_behave of memory is
 		if (init = '1') then
 			-- Initialise some memory
          mem_reg(0) <= "0001000000000001"; -- ADDI
-         mem_reg(1) <= "0000000010111000"; -- ADD
+         mem_reg(1) <= "0000000010101000"; -- ADD
          mem_reg(2) <= "0001001000100001"; -- ADDI
          mem_reg(3) <= "0001001100000001"; -- ADDI
          
 			for i in 4 to 15 loop
-				mem_reg(i) <= "0000000000000000";
+				mem_reg(i) <= "1111111111111111"; -- The End
 			end loop;
 		elsif (rd = '1') then
 			Y_out <= mem_reg(to_integer(unsigned(Add_in(3 downto 0))));

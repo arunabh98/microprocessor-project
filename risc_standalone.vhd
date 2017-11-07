@@ -598,7 +598,6 @@ begin
 end process;
 
 
-
 process (clock, X_main)
 begin
 if (clock'event and clock = '1') then

@@ -4,6 +4,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 library ieee;
 use ieee.numeric_std.all; 
+library std;
+use std.textio.all;
 
 
 entity rf is 
@@ -29,11 +31,7 @@ begin
 				registers(i) <= "0000000000000000";
 			end loop;
 		else
-			D1 <= registers(to_integer(unsigned(A1)));
-			D2 <= registers(to_integer(unsigned(A2)));
-
-	 
-		   	if (wr = '1') then
+             	if (wr = '1') then
 		   		if (pc_wr = '1'and (not (A3 = "111"))) then
 		   			registers(7) <= D_PC;
 		   			registers(to_integer(unsigned(A3))) <= D3;
@@ -45,7 +43,13 @@ begin
 		   	end if;
 		end if;
 	end if;
-
 end process;
+
+process (clk, A1, A2)
+begin
+	D1 <= registers(to_integer(unsigned(A1)));
+	D2 <= registers(to_integer(unsigned(A2)));
+end process;
+		  
 end rf_behave;
 	    

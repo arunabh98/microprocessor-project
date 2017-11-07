@@ -20,18 +20,9 @@ architecture memory_behave of memory is
 		
 		if (init = '1') then
 			-- Initialise some memory
-         mem_reg(0) <= "0001000000111111"; -- ADDI  111111 in reg 0
-         mem_reg(1) <= "0001001001111111"; -- ADDI 111111 in reg 1
-         mem_reg(2) <= "0001010010000111"; -- ADDI 000111 in reg2
-         mem_reg(3) <= "0010000001100001"; -- NDZ store 0 in reg 4 and set zero flag
-         mem_reg(4) <= "0010001010100000"; -- NDU something in 111000  reg4 
-         mem_reg(5) <= "0010010100110010"; -- NDC still -32 in reg6 (output is 19) 
-         mem_reg(6) <= "0000001000110010"; -- ADC  -16 in reg2 
-         mem_reg(7) <= "0010010100110010"; -- NDC still -32 in reg6 (output is 19) 
-         mem_reg(8) <= "0010010001100001"; -- NDZ 
-         mem_reg(9) <= "0000000010011001"; -- ADZ 0 in reg3
+         mem_reg(0) <= "0011010101010101"; -- LHI R2
         
-			for i in 10 to 15 loop
+			for i in 1 to 15 loop
 				mem_reg(i) <= "1111111111111111"; -- The End
 			end loop;
 		elsif (rd = '1') then

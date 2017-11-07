@@ -346,19 +346,26 @@ begin
    		c_en <= '0'; 
    		alu_x <= t1_out; 
    		alu_y <= se10_out; 
-   		t3_en <= '0';
+   		t3_en <= '1';
    		t3_in <= alu_out;
       t1_en <= '0';
       t2_en <= '0';
-      zero_en <= '0';
-      carry_en <= '0';
+      
 
    		if (op_code(3 downto 0) = "0001") then
    			next_state <= "00100";
+   			zero_en <= '1'; 
+    		   zero_in <= z_out; 
+    		   carry_en <= '1'; 
+    		   carry_in <= car_out; 
    		elsif (op_code(3 downto 0) = "0100") then
-   			next_state <= "01000"; 
+   			next_state <= "01000";
+   			zero_en <= '1'; 
+    		   zero_in <= z_out;   
    		elsif (op_code(3 downto 0) = "0101") then
    			next_state <= "00110";
+   			zero_en <= '0';
+            carry_en <= '0';
    		end if; 
 
    	elsif (state = "00110") then -- STATE 6

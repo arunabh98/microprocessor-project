@@ -52,7 +52,7 @@ begin
 		elsif (x0 = '0' and x1 = '1') then
 			S <= sig3; -- NAND operation
 			C_out <= C_in;
-			Z_out <= not (sig3(0) or sig3(1) or sig3(2) or sig3(3) or sig3(4) or sig3(5) or sig3(6) or sig3(7) or sig3(8) or sig3(9) or sig3(10) or sig3(11) or sig3(12) or sig3(13) or sig3(14) or sig3(15));
+			Z_out <= not (sig3(0) or sig3(1) or sig3(2) or sig3(3) or sig3(4) or sig3(5) or sig3(6) or sig3(7) or sig3(8) or sig3(9) or sig3(10) and sig3(11) an sig3(12) or sig3(13) or sig3(14) or sig3(15));
 		end if;
 	end process;
 

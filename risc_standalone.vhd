@@ -346,8 +346,12 @@ begin
    		ir_en <= '0';
    		a_en <= '0';
    		c_en <= '0'; 
-   		alu_x <= t1_out; 
-   		alu_y <= se10_out; 
+   		if (op_code(3 downto 1) = "010") then
+             alu_x <= t2_out; 
+   		else
+            alu_x <= t1_out;
+        end if;
+        alu_y <= se10_out; 
    		t3_en <= '1';
    		t3_in <= alu_out;
       t1_en <= '0';
@@ -376,6 +380,7 @@ begin
    		mem_wr <= '1';
    		next_state <= "00001"; 
    		mem_a <= t3_out;
+        mem_din <= t1_out;
    		ir_en <= '0'; 
    		rwr <= '0';
    		a_en <= '0';

@@ -20,9 +20,9 @@ architecture memory_behave of memory is
 		
 		if (init = '1') then
 			-- Initialise some memory
-         mem_reg(0) <= "0011010101010101"; -- LHI R2
-        
-			for i in 1 to 15 loop
+         mem_reg(0) <= "0001000000000011";
+         mem_reg(1) <= "1000101000000110"; -- LM
+			for i in 2 to 14 loop
 				mem_reg(i) <= "1111111111111111"; -- The End
 			end loop;
 		elsif (rd = '1') then

@@ -7,6 +7,9 @@ use std.standard.all;
 library ieee;
 use ieee.std_logic_1164.all;
 
+library ieee;
+use ieee.numeric_std.all;
+
 entity risc_standalone is
 	port (	
 			-- X_main : in std_logic_vector(32 downto 0);
@@ -455,17 +458,6 @@ begin
    		mem_wr <= '0';
    		ir_en <= '1';
 
-      for i in 0 to 7 loop
-        if(to_integer(unsigned(pe_out)) = i) then
-          ir_in(i) <= '0';
-        else
-          ir_in(i) <= ir_out(i);
-        end if;
-
-      end loop;
-
-      ir_in(15 downto 8) <= ir_out(15 downto 8);
-
    		a_en <= '0';
    		c_en <= '0';
    		rwr <= '1';
@@ -479,7 +471,7 @@ begin
    		if(pe_fail = '1') then
    			next_state <= "00001";
    		else 
-   			next_state <= "10000";
+   			next_state <= "01001";
    		end if; 
 
    	elsif (state = "01011") then -- STATE 11
@@ -506,7 +498,7 @@ begin
    		--commong signals for all instructions
    		mem_wr <= '1';
    		mem_a <= a_out;
-   		ir_en <= '0';
+   		ir_en <= '1';
    		rwr <= '0';
    		a_en <= '1';
    		a_in <= alu_out;
@@ -620,7 +612,22 @@ begin
 	Y_main(4 downto 0) <= next_state;
 	op_code <= ir_out(15 downto 12); 
    mem_rd <= '1'; 
-	ir_in <= mem_dout;
+   
+	if ((state = "01010") or (state = "01100")) then
+      for i in 0 to 7 loop
+        if(to_integer(unsigned(pe_out)) = i) then
+          ir_in(7 - i) <= '0';
+        else
+          ir_in(7 - i) <= ir_out(7 - i);
+        end if;
+
+      end loop;
+
+      ir_in(15 downto 8) <= ir_out(15 downto 8);
+   else
+   	ir_in <= mem_dout;
+   end if;
+   
 end process;
 
 

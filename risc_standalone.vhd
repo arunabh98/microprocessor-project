@@ -448,12 +448,24 @@ begin
       carry_en <= '0';
    		next_state <= "01010"; 
 
-   	elsif (state = "01010") then-- STATE 10 
+   	elsif (state = "01010") then -- STATE 10 
    		
    		--common signals for all instructions 
    		pe_in <= ir_out(7 downto 0);
    		mem_wr <= '0';
-   		ir_en <= '0';
+   		ir_en <= '1';
+
+      for i in 0 to 7 loop
+        if(to_integer(unsigned(pe_out)) = i) then
+          ir_in(i) <= '0';
+        else
+          ir_in(i) <= ir_out(i);
+        end if;
+
+      end loop;
+
+      ir_in(15 downto 8) <= ir_out(15 downto 8);
+
    		a_en <= '0';
    		c_en <= '0';
    		rwr <= '1';

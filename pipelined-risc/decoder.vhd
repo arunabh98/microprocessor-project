@@ -96,30 +96,94 @@ begin
 
 					
 	    elsif (X = "0110") then
-	    	A1 <= 
-			A2 <=
-			A3 <= 
-			D3 <= 
-			rf_r <= 
-			rf_wr <= 
-			alua_opc <= 
-			alua_en <= 
-			alua_cen <= 
-			alua_zen <= 
-			alu_in1 <= 
-			alu_in2 <= 
-			mem_r <= 
-			mem_a <= 
-			mem_wr <= 
+	    	A1 <= '0';
+			A2 <= '0';
+			A3 <=  "11";
+			D3 <= "10";
+			rf_r <= '0';
+			rf_wr <= '1';
+			alua_opc <= '0';
+			alua_en <= '1';
+			alua_cen <= '0';
+			alua_zen <= '0';
+			alu_in1 <= "00";
+			alu_in2 <= "10";
+			mem_r <= '1';
+			mem_a <= '1';
+			mem_wr <= '0';
 
 	    elsif (X = "0111") then
+	    	A1 <= '0';
+			A2 <= '1';
+			A3 <=  "00";
+			D3 <= "00";
+			rf_r <= '1';
+			rf_wr <= '0';
+			alua_opc <= '0';
+			alua_en <= '1';
+			alua_cen <= '0';
+			alua_zen <= '0';
+			alu_in1 <= "00";
+			alu_in2 <= "10";
+			mem_r <= '0';
+			mem_a <= '1';
+			mem_wr <= '1';
 
 	    elsif (X = "1100") then
 
-	    elsif (X = "1000") then 
+	    	A1 <= '0';
+			A2 <= '0';
+			A3 <=  "00";
+			D3 <= "00";
+			rf_r <= '1';
+			rf_wr <= '0';
+			alua_opc <= '0';
+			alua_en <= '1';
+			alua_cen <= '0';
+			alua_zen <= '0';
+			alu_in1 <= "01";
+			alu_in2 <= "01";
+			mem_r <= '0';
+			mem_a <= '0';
+			mem_wr <= '1';
 
-	    else  						-- JLR
-	    	
+
+	    elsif (X = "1000") then
+
+	    	A1 <= '0';
+			A2 <= '0';
+			A3 <=  "10";
+			D3 <= "01";
+			rf_r <= '0';
+			rf_wr <= '1';
+			alua_opc <= '0';
+			alua_en <= '1';
+			alua_cen <= '0';
+			alua_zen <= '0';
+			alu_in1 <= "10";
+			alu_in2 <= "01";
+			mem_r <= '0';
+			mem_a <= '0';
+			mem_wr <= '0';
+
+
+	    else  			
+	    				-- JLR
+	    	A1 <= '0';
+			A2 <= '0';
+			A3 <=  "10";
+			D3 <= "01";
+			rf_r <= '1';
+			rf_wr <= '1';
+			alua_opc <= '0';
+			alua_en <= '0';
+			alua_cen <= '0';
+			alua_zen <= '0';
+			alu_in1 <= "00";
+			alu_in2 <= "00";
+			mem_r <= '0';
+			mem_a <= '0';
+			mem_wr <= '0';
 	    	
 	    	
 			

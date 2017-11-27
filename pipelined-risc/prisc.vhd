@@ -80,11 +80,14 @@ architecture pipelined of prisc is
 			  se_out: out std_logic_vector(15 downto 0));
 	end component;
 
-signal zeros, pc_in, pc_out, palu_out, malu_out, codemem_out, ir_out_p0, ir_out_pa, ir_out_pb, ir_out_pc, ir_out_pd : std_logic_vector(15 downto 0) := "0000000000000000";
+signal zeros, pc_in, pc_out, palu_out, malu_out, codemem_out, ir_out_p0, ir_out_pa, ir_out_pb, ir_out_pc, ir_out_pd, npc_out_p0, npc_out_pb,
+npc_out_pa, rf_D1, rf_D2, rf_D3, npc_out_pd, memd_out_pd, t3_out_pd, datamem_a, datamem_out, datamem_din , t1_in, t2_out_pb, t2_out_pc, t2_out_pd,
+t1_out_pb, t3_out_pb, npc_out_pc, t1_out_pc, t1_out_pd, t3_out_pc, alu_1, alu_2, ir_out_pb_50, ir_out_pb_80, ir_out_pd_80, ir : std_logic_vector(15 downto 0) := "0000000000000000";
 signal one : std_logic_vector(15 downto 0) := "0000000000000001";
-signal pc_en, codemem_init, p0_en, pa_en, pb_en, pd_en : std_logic := '0';
+signal pc_en, codemem_init, p0_en, pa_en, pb_en, pd_en, rf_wr, rf_rst, cen, zen, datamem_init, datamem_rd,
+datamem_wr, zin, zout, cin, cout, alu_op1, iter_in, iter_out, iter_en : std_logic := '0';
 signal contr_pa_in, contr_pa_out, contr_pb_out, contr_pc_out, contr_pd_out : std_logic_vector(18 downto 0) := "0000000000000000000";
-signal pe_out : std_logic_vector(2 downto 0) := "000";
+signal pe_out,rf_A1,rf_A2,rf_A3 : std_logic_vector(2 downto 0) := "000";
 
 begin
 
@@ -94,7 +97,7 @@ codemem: memory port map ('0', '1', codemem_init, pc_out, zeros, codemem_out);
 palu: alu port map (X => pc_out, Y => one, x0 => '1', x1 => '1', C_in => '0', S => palu_out);
 -- Instruction Decode
 dec: decoder port map (ir_out_p0(15 downto 12), contr_pa_in);
-pipe0: pipe port map (ir_in => codemem_out, npc_in => palu_out, t1_in => zeros, t2_in => zeros, t3_in => 0, memd_in => zeros, contr_in => "0000000000000000000", pipe_en => p0_en,
+pipe0: pipe port map (ir_in => codemem_out, npc_in => palu_out, t1_in => zeros, t2_in => zeros, t3_in => zeros, memd_in => zeros, contr_in => "0000000000000000000", pipe_en => p0_en,
 						clk => clk, ir_out => ir_out_p0, npc_out => npc_out_p0);
 -- Register Read
 rf_main: rf port map (rf_A1, rf_A2, rf_A3, rf_D3, clk, rf_wr, rf_rst, rf_D1, rf_D2);

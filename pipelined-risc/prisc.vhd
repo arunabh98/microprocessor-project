@@ -197,7 +197,17 @@ process(clk, rst)
 			rf_A3 <= pe_out;
 		end if;
 		
-		rf_wr <= contr_pd_out(0);
+		-- Decoding rf_wr
+		if ((op_d = "0000") or (op_d = "0010")) then
+			if (ir_out_pd(1 downto 0) = "01") then
+				rf_wr <= z_out_pd;
+			elsif (ir_out_pd(1 downto 0) = "10") then
+				rf_wr <= c_out_pd;
+			else
+				rf_wr <= '1';
+		else
+			rf_wr <= contr_pd_out(0);
+		end if;
 
 		if (contr_pd_out(2 downto 1) = "00") then
 			rf_D3 <= t3_out_pd;
@@ -424,8 +434,6 @@ process(clk, rst)
 		else
 			p0_en <= '1';
 		end if;
-
-
 
 	end process;
 end pipelined;

@@ -223,9 +223,9 @@ process(clk, rst)
 
 		-- RF_WB signals dep on contr_pd_out
 		if (contr_pd_out(4 downto 3) = "01") then
-			rf_A3 <= ir_out_pd(6 downto 4);
+			rf_A3 <= ir_out_pd(5 downto 3);
 		elsif (contr_pd_out(4 downto 3) = "10") then
-			rf_A3 <= ir_out_pd(12 downto 10);
+			rf_A3 <= ir_out_pd(11 downto 9);
 		else -- Including 
 			rf_A3 <= pe_out;
 		end if;

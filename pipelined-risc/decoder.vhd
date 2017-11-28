@@ -16,12 +16,10 @@ architecture decoder_behave of decoder is
 signal A1,A2,rf_r,alua_opc,alua_en,alua_cen,alua_zen,mem_r,mem_wr,mem_a,rf_wr: std_logic;
 signal alu_in1,alu_in2,A3,D3: std_logic_vector(1 downto 0);
 begin
-	process(X)
-	begin
 
 		Y(18) <= A1;
 		Y(17) <= A2;
-		Y(4 downto 3) <= A3;
+		Y(4 downto 3) <= A3(1 downto 0);
 		Y(2 downto 1) <= D3;
 		Y(16) <= rf_r;
 		Y(10) <= alua_en;
@@ -35,7 +33,8 @@ begin
 		Y(0) <= rf_wr;
 		Y(11) <= alua_opc;
 
-
+	process(X)
+	begin
 		if((X = "0000") or (X = "0010") or (X = "0001")) then
 			A1 <= '0'; 
 			A2 <= '0';

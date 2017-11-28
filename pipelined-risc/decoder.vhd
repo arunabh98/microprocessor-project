@@ -21,19 +21,19 @@ begin
 
 		Y(18) <= A1;
 		Y(17) <= A2;
-		Y(16 downto 15) <= A3;
-		Y(14 downto 13) <= D3;
-		Y(12) <= rf_r;
-		Y(11) <= alua_en;
-		Y(10) <= alua_cen;
-		Y(9) <= alua_zen;
-		Y(8 downto 7) <= alu_in1;
-		Y(6 downto 5) <= alu_in2;
-		Y(4) <= mem_r;
-		Y(3) <= mem_a;
-		Y(2) <= mem_wr;
-		Y(1) <= rf_wr;
-		Y(0) <= alua_opc;
+		Y(4 downto 3) <= A3;
+		Y(2 downto 1) <= D3;
+		Y(16) <= rf_r;
+		Y(10) <= alua_en;
+		Y(9) <= alua_cen;
+		Y(8) <= alua_zen;
+		Y(15 downto 14) <= alu_in1;
+		Y(13 downto 12) <= alu_in2;
+		Y(7) <= mem_r;
+		Y(5) <= mem_a;
+		Y(6) <= mem_wr;
+		Y(0) <= rf_wr;
+		Y(11) <= alua_opc;
 
 
 		if((X = "0000") or (X = "0010") or (X = "0001")) then

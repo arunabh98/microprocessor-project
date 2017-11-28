@@ -21,17 +21,14 @@ architecture memory_behave of code_memory is
 		if (init = '1') then
 			-- Initialise some memory
             mem_reg(0) <= "0000000001010000"; -- ADD 0 1 2 
-            mem_reg(1) <= "0000000001011000"; -- ADD 0 1 3
-				mem_reg(2) <= "0000010100101010"; -- ADC 2 4 5
-				mem_reg(3) <= "0011010000000011"; -- LHI in 2 
-				mem_reg(4) <= "0100110000000011"; -- LW in 6 
-				for i in 5 to 14 loop
+            mem_reg(1) <= "0000111010011000"; -- ADD 7 2 3
+				mem_reg(2) <= "0000110010101010"; -- ADC 6 2 5
+            mem_reg(3) <= "0010100001000010"; -- ADC 4 1 0
+				for i in 4 to 14 loop
 				mem_reg(i) <= "1111111111111111"; -- The End
 			end loop;
 		elsif (rd = '1') then
 			Y_out <= mem_reg(to_integer(unsigned(Add_in(3 downto 0))));
-		elsif (rd = '0') then
-			Y_out <= "1111111111111111";
 		end if;
 
 		if (wr = '1') then

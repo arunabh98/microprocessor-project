@@ -11,6 +11,7 @@ entity dregister_1 is                 -- no. of bits
     din  : in  std_logic;
     dout : out std_logic;
     enable: in std_logic;
+    rst : in std_logic;
     clk     : in  std_logic);
 end dregister_1;
 
@@ -19,7 +20,9 @@ architecture behave1 of dregister_1 is
 begin  -- behave
 process(clk)
 begin 
-  if(clk'event and clk = '1') then
+  if (rst = '1') then
+    dout <= '0';
+  elsif(clk'event and clk = '1') then
     if enable = '1' then
       dout <= din;
     end if;

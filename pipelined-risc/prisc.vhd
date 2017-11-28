@@ -23,7 +23,7 @@ architecture pipelined of prisc is
 			contr_out : out std_logic_vector(18 downto 0);
 			pipe_en, c_in, z_in : in std_logic;
 			c_out, z_out : out std_logic;
-			clk : in std_logic);
+			rst, clk : in std_logic);
 	end component;
 
 	component alu is 
@@ -34,7 +34,14 @@ architecture pipelined of prisc is
 			S : out std_logic_vector(15 downto 0));
 	end component;
 
-	component memory is 
+	component code_memory is 
+		port ( wr,rd, init : in std_logic; 
+				Add_in, D_in: in std_logic_vector(15 downto 0);
+				Y_out: out std_logic_vector(15 downto 0)); 
+	end component; 
+	
+	
+	component data_memory is 
 		port ( wr,rd, init : in std_logic; 
 				Add_in, D_in: in std_logic_vector(15 downto 0);
 				Y_out: out std_logic_vector(15 downto 0)); 
@@ -58,6 +65,7 @@ architecture pipelined of prisc is
 	    din  : in  std_logic;
 	    dout : out std_logic;
 	    enable: in std_logic;
+       rst : in std_logic;
 	    clk     : in  std_logic);
 	end component;
 
@@ -66,6 +74,7 @@ architecture pipelined of prisc is
 	    din  : in  std_logic_vector(15 downto 0);
 	    dout : out std_logic_vector(15 downto 0);
 	    enable: in std_logic;
+       rst : in std_logic;
 	    clk     : in  std_logic);
 	end component;
 
@@ -86,12 +95,14 @@ architecture pipelined of prisc is
 			  x_none: out std_logic);
 	end component;
 
-signal zeros, prc_in, prc_out, palu_out, malu_out, codemem_out, ir_out_p0, ir_out_pa, ir_out_pb, ir_out_pc, ir_out_pd, npc_out_p0, npc_out_pb,
+signal prc_in : std_logic_vector(15 downto 0) := (others => '0');
+
+signal zeros, prc_out, palu_out, malu_out, codemem_out, ir_out_p0, ir_out_pa, ir_out_pb, ir_out_pc, ir_out_pd, npc_out_p0, npc_out_pb,
 	npc_out_pa, rf_D1, rf_D2, rf_D3, npc_out_pd, memd_out_pd, t3_out_pd, datamem_a, datamem_out, datamem_din , t1_in, t2_out_pb, t2_out_pc, t2_out_pd,
 	t1_out_pb, t3_out_pb, npc_out_pc, t1_out_pc, t1_out_pd, t3_out_pc, alu_1, alu_2, ir_out_pb_50, ir_out_pb_80, ir_out_pd_80, t1_out_p0, t2_out_p0,
 	t3_out_p0, memd_out_p0, ir_in_pa, npc_in_pa, t1_in_pa, t2_in_pa, t3_in_pa, memd_in_pa, t1_out_pa, t2_out_pa, t3_out_pa, memd_out_pa, ir_in_pb,
 	npc_in_pb, t1_in_pb, t2_in_pb, t3_in_pb, memd_in_pb, memd_out_pb, ir_in_pc, npc_in_pc, t1_in_pc, t2_in_pc, t3_in_pc, memd_in_pc, memd_out_pc,
-	ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd, ir_in_p0, npc_in_p0, t1_in_p0, t2_in_p0, t3_in_p0, memd_in_p0: std_logic_vector(15 downto 0) := (others => '0');
+	ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd, ir_in_p0, npc_in_p0, t1_in_p0, t2_in_p0, t3_in_p0, memd_in_p0: std_logic_vector(15 downto 0) := "0000000000000000";
 signal one : std_logic_vector(15 downto 0) := (0 => '1', others => '0');
 signal pc_en, prc_en, codemem_init, p0_en, pa_en, pb_en, pd_en, rf_wr, rf_rst, cen, zen, datamem_init, datamem_rd, z_out_p0, c_out_p0, z_out_pa, c_out_pa,
 	z_in_pa, c_in_pa, z_out_pb, c_out_pb, z_in_pb, c_in_pb, z_out_pc, c_out_pc, z_in_pc, c_in_pc, z_out_pd, c_out_pd, z_in_pd, c_in_pd, datamem_wr, zin,
@@ -103,8 +114,8 @@ signal op_a, op_b, op_c, op_d : std_logic_vector (3 downto 0) := "0000";
 begin
 
 -- Instruction Fetch
-pc: dregister port map (prc_in, prc_out, prc_en, clk);
-codemem: memory port map ('0', '1', codemem_init, prc_out, zeros, codemem_out);
+pc: dregister port map (prc_in, prc_out, prc_en, rst, clk);
+codemem: code_memory port map ('0', '1', codemem_init, prc_out, zeros, codemem_out);
 palu: alu port map (X => prc_out, Y => one, x0 => '1', x1 => '1', C_in => '0', S => palu_out);
 -- Instruction Decode
 dec: decoder port map (ir_out_p0(15 downto 12), decoded_contr);
@@ -112,28 +123,28 @@ dec: decoder port map (ir_out_p0(15 downto 12), decoded_contr);
 --						pipe_en => p0_en, clk => clk, ir_out => ir_out_p0, npc_out => npc_out_p0, contr_out => contr_p0_out, t1_out => t1_out_p0, t2_out => t2_out_p0,
 --						t3_out => t3_out_p0, memd_out => memd_out_p0, c_in => '0', z_in => '0', z_out => z_out_p0, c_out => c_out_p0);
 pipe0: pipe port map (ir_in => ir_in_p0, npc_in => npc_in_p0, t1_in => t1_in_p0, t2_in => t2_in_p0, t3_in => t3_in_p0, memd_in => memd_in_p0, contr_in => contr_in_p0,
-						pipe_en => p0_en, clk => clk, ir_out => ir_out_p0, npc_out => npc_out_p0, contr_out => contr_p0_out, t1_out => t1_out_p0, t2_out => t2_out_p0,
+						pipe_en => p0_en, rst => rst, clk => clk, ir_out => ir_out_p0, npc_out => npc_out_p0, contr_out => contr_p0_out, t1_out => t1_out_p0, t2_out => t2_out_p0,
 						t3_out => t3_out_p0, memd_out => memd_out_p0, c_in => c_in_p0, z_in => z_in_p0, c_out => c_out_p0, z_out => z_out_p0);
 -- Register Read
 rf_main: rf port map (rf_A1, rf_A2, rf_A3, rf_D3, clk, rf_wr, rf_rst, rf_D1, rf_D2);
 -- pipeA: pipe port map (ir_in => ir_out_p0, npc_in => npc_out_p0, t1_in => zeros, t2_in => zeros, t3_in => zeros, memd_in => zeros, contr_in => contr_pa_in, pipe_en => pa_en,
 --						clk => clk, ir_out => ir_out_pa, npc_out => npc_out_pa, contr_out => contr_pa_out);
 
-pipeA: pipe port map (ir_in => ir_in_pa, npc_in => npc_in_pa, t1_in => t1_in_pa, t2_in => t2_in_pa, t3_in => t3_in_pa, memd_in => memd_in_pa, contr_in => contr_in_pa,
+pipeA: pipe port map (ir_in => ir_in_pa, npc_in => npc_in_pa, t1_in => t1_in_pa, t2_in => t2_in_pa, t3_in => t3_in_pa, memd_in => memd_in_pa, contr_in => contr_in_pa, rst => rst,
 						pipe_en => pa_en, clk => clk, ir_out => ir_out_pa, npc_out => npc_out_pa, contr_out => contr_pa_out, t1_out => t1_out_pa, t2_out => t2_out_pa,
 						t3_out => t3_out_pa, memd_out => memd_out_pa, c_in => c_in_pa, z_in => z_in_pa, c_out => c_out_pa, z_out => z_out_pa);
 -- Execute
 malu: alu port map (X => alu_1, Y => alu_2, x0 => alu_op1, x1 => '1', C_in => cout, C_out => cin, Z_out => zin, S => malu_out);
-pipeB: pipe port map (ir_in => ir_in_pb, npc_in => npc_in_pb, t1_in => t1_in_pb, t2_in => t2_in_pb, t3_in => t3_in_pb, memd_in => memd_in_pb, contr_in => contr_in_pb,
+pipeB: pipe port map (ir_in => ir_in_pb, npc_in => npc_in_pb, t1_in => t1_in_pb, t2_in => t2_in_pb, t3_in => t3_in_pb, memd_in => memd_in_pb, contr_in => contr_in_pb, rst => rst,
 						pipe_en => pa_en, clk => clk, ir_out => ir_out_pb, npc_out => npc_out_pb, contr_out => contr_pb_out, t1_out => t1_out_pb, t2_out => t2_out_pb,
 						t3_out => t3_out_pb, memd_out => memd_out_pb, c_in => c_in_pb, z_in => z_in_pb, c_out => c_out_pb, z_out => z_out_pb);
 -- Memory
-datamem: memory port map (datamem_wr, datamem_rd, datamem_init, datamem_a, datamem_din, datamem_out);
-pipeC: pipe port map (ir_in => ir_in_pc, npc_in => npc_in_pc, t1_in => t1_in_pc, t2_in => t2_in_pc, t3_in => t3_in_pc, memd_in => memd_in_pc, contr_in => contr_in_pc,
+datamem: data_memory port map (datamem_wr, datamem_rd, datamem_init, datamem_a, datamem_din, datamem_out);
+pipeC: pipe port map (ir_in => ir_in_pc, npc_in => npc_in_pc, t1_in => t1_in_pc, t2_in => t2_in_pc, t3_in => t3_in_pc, memd_in => memd_in_pc, contr_in => contr_in_pc, rst => rst,
 						pipe_en => pc_en, clk => clk, ir_out => ir_out_pc, npc_out => npc_out_pc, contr_out => contr_pc_out, t1_out => t1_out_pc, t2_out => t2_out_pc,
 						t3_out => t3_out_pc, memd_out => memd_out_pc, c_in => c_in_pc, z_in => z_in_pc, c_out => c_out_pc, z_out => z_out_pc);
 -- RF Write-Back
-pipeD: pipe port map (ir_in => ir_in_pd, npc_in => npc_in_pd, t1_in => t1_in_pd, t2_in => t2_in_pd, t3_in => t3_in_pd, memd_in => memd_in_pd, contr_in => contr_in_pd,
+pipeD: pipe port map (ir_in => ir_in_pd, npc_in => npc_in_pd, t1_in => t1_in_pd, t2_in => t2_in_pd, t3_in => t3_in_pd, memd_in => memd_in_pd, contr_in => contr_in_pd, rst => rst,
 						pipe_en => pd_en, clk => clk, ir_out => ir_out_pd, npc_out => npc_out_pd, contr_out => contr_pd_out, t1_out => t1_out_pd, t2_out => t2_out_pd,
 						t3_out => t3_out_pd, memd_out => memd_out_pd, c_in => c_in_pd, z_in => z_in_pd, c_out => c_out_pd, z_out => z_out_pd);
 
@@ -141,15 +152,28 @@ pipeD: pipe port map (ir_in => ir_in_pd, npc_in => npc_in_pd, t1_in => t1_in_pd,
 alu_se10: se10 port map (ir_out_pb(5 downto 0), ir_out_pb_50); -- sign extended for alu_1
 alu_se7: se7 port map (ir_out_pb(8 downto 0), '1', ir_out_pb_80);
 pd_se7: se7 port map (ir_out_pd(8 downto 0), '0', ir_out_pd_80);
-car: dregister_1 port map (cin, cout, cen, clk);
-zer: dregister_1 port map (zin, zout, zen, clk);
-iter: dregister_1 port map (iter_in, iter_out, iter_en, clk);
+car: dregister_1 port map (cin, cout, cen, rst, clk);
+zer: dregister_1 port map (zin, zout, zen, rst, clk);
+iter: dregister_1 port map (iter_in, iter_out, iter_en, rst, clk);
 branch_comp: comparator port map (t1_out_pb, t2_out_pb, branch_eq);
 sm_pe: pr_encoder port map (ir_out_pc(7 downto 0), sm_index, sm_fin);
 lm_pe: pr_encoder port map (ir_out_pd(7 downto 0), lm_index, lm_fin);
 
 process(clk, rst)
 	begin
+	   if (rst = '1') then
+	      
+	      codemem_init <= '1';
+	      datamem_init <= '1';
+	      rf_rst <= '1';
+	   else
+	      codemem_init <= '0';
+	      datamem_init <= '0';
+	      datamem_rd <= '1';
+	      rf_rst <= '0';
+	-- REMOVE PLISS
+	   prc_en <= '1';
+	   -- REMOVE
 		prc_in <= palu_out;
 		if (contr_pa_out(18) = '1') then
 			rf_A1 <= sm_index;
@@ -188,7 +212,7 @@ process(clk, rst)
 		zen <= contr_pb_out(8);
 
 		-- MEM signals dep on contr_pc_out
-		datamem_rd <= contr_pc_out(7);
+		--datamem_rd <= contr_pc_out(7);
 		datamem_wr <= contr_pc_out(6);
 		datamem_din <= t1_out_pc;
 		if (contr_pc_out(5) = '1') then
@@ -213,7 +237,8 @@ process(clk, rst)
 			elsif (ir_out_pd(1 downto 0) = "10") then
 				rf_wr <= c_out_pd;
 			else
-				rf_wr <= '1';
+				rf_wr <= contr_pd_out(0); -- Not '1' as the uninit instructions would also satisfy!
+			end if;
 		else
 			rf_wr <= contr_pd_out(0);
 		end if;
@@ -235,7 +260,7 @@ process(clk, rst)
 		op_d <= ir_out_pd(15 downto 12);
 		
 		-- Mapping of Pipe 0
-		if ((op_b <= "1100") and (branch_eq = '1')) then
+		if ((op_b = "1100") and (branch_eq = '1')) then
 			-- Flush
 			ir_in_p0 <= (others => '1');
 			contr_in_p0 <= (others => '0');
@@ -443,6 +468,6 @@ process(clk, rst)
 		else
 			p0_en <= '1';
 		end if;
-
+    end if;
 	end process;
 end pipelined;

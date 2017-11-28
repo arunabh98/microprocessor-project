@@ -173,6 +173,15 @@ process(clk, rst)
 		else
 			alu_1 <= ir_out_pb_80;
 		end if;
+		if (contr_pb_out(13 downto 12) = "00") then
+			alu_2 <= t2_out_pb;
+		elsif (contr_pb_out(13 downto 12) = "01") then
+			alu_2 <= npc_out_pb;
+		else
+			-- iter
+
+		end if;
+
 
 		alu_op1 <= not contr_pb_out(11); -- Op Code logic
 		cen <= contr_pb_out(9);

@@ -178,12 +178,12 @@ process(clk, rst)
 		if (contr_pa_out(18) = '1') then
 			rf_A1 <= sm_index;
 		else
-			rf_A1 <= ir_out_pa(12 downto 10);
+			rf_A1 <= ir_out_pa(11 downto 9);
 		end if;
 
 		-- RF signals dep on contr_pa_out
 		if (contr_pa_out(17) = '0') then
-			rf_A2 <= ir_out_pa(9 downto 7);
+			rf_A2 <= ir_out_pa(8 downto 6);
 		else
 			rf_A2 <= pe_out;
 		end if;

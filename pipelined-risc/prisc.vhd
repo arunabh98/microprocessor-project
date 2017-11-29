@@ -136,7 +136,7 @@ pipeA: pipe port map (ir_in => ir_in_pa, npc_in => npc_in_pa, t1_in => t1_in_pa,
 -- Execute
 malu: alu port map (X => alu_1, Y => alu_2, x0 => alu_op1, x1 => '1', C_in => cout, C_out => cin, Z_out => zin, S => malu_out);
 pipeB: pipe port map (ir_in => ir_in_pb, npc_in => npc_in_pb, t1_in => t1_in_pb, t2_in => t2_in_pb, t3_in => t3_in_pb, memd_in => memd_in_pb, contr_in => contr_in_pb, rst => rst,
-						pipe_en => pa_en, clk => clk, ir_out => ir_out_pb, npc_out => npc_out_pb, contr_out => contr_pb_out, t1_out => t1_out_pb, t2_out => t2_out_pb,
+						pipe_en => pb_en, clk => clk, ir_out => ir_out_pb, npc_out => npc_out_pb, contr_out => contr_pb_out, t1_out => t1_out_pb, t2_out => t2_out_pb,
 						t3_out => t3_out_pb, memd_out => memd_out_pb, c_in => c_in_pb, z_in => z_in_pb, c_out => c_out_pb, z_out => z_out_pb);
 -- Memory
 datamem: data_memory port map (datamem_wr, datamem_rd, datamem_init, datamem_a, datamem_din, datamem_out);
@@ -159,7 +159,17 @@ branch_comp: comparator port map (t1_out_pb, t2_out_pb, branch_eq);
 sm_pe: pr_encoder port map (ir_out_pc(7 downto 0), sm_index, sm_fin);
 lm_pe: pr_encoder port map (ir_out_pd(7 downto 0), lm_index, lm_fin);
 
-process(clk, rst)
+process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd, contr_in_pd, rst,
+						pd_en, ir_out_pd, npc_out_pd, contr_pd_out, t1_out_pd, t2_out_pd,
+						t3_out_pd, memd_out_pd, c_in_pd, z_in_pd, c_out_pd, z_out_pd, ir_in_p0, npc_in_p0, t1_in_p0, t2_in_p0, t3_in_p0, memd_in_p0, contr_in_p0, rst,
+						p0_en, ir_out_p0, npc_out_p0, contr_p0_out, t1_out_p0, t2_out_p0,
+						t3_out_p0, memd_out_p0, c_in_p0, z_in_p0, c_out_p0, z_out_p0, ir_in_pa, npc_in_pa, t1_in_pa, t2_in_pa, t3_in_pa, memd_in_pa, contr_in_pa, rst,
+						pa_en, ir_out_pa, npc_out_pa, contr_pa_out, t1_out_pa, t2_out_pa,
+						t3_out_pa, memd_out_pa, c_in_pa, z_in_pa, c_out_pa, z_out_pa, ir_in_pb, npc_in_pb, t1_in_pb, t2_in_pb, t3_in_pb, memd_in_pb, contr_in_pb, rst,
+						pb_en, ir_out_pb, npc_out_pb, contr_pb_out, t1_out_pb, t2_out_pb,
+						t3_out_pb, memd_out_pb, c_in_pb, z_in_pb, c_out_pb, z_out_pb, ir_in_pc, npc_in_pc, t1_in_pc, t2_in_pc, t3_in_pc, memd_in_pc, contr_in_pc, rst,
+						pc_en, ir_out_pc, npc_out_pc, contr_pc_out, t1_out_pc, t2_out_pc,
+						t3_out_pc, memd_out_pc, c_in_pc, z_in_pc, c_out_pc, z_out_pc)
 	begin
 	   if (rst = '1') then
 	      
@@ -171,9 +181,19 @@ process(clk, rst)
 	      datamem_init <= '0';
 	      datamem_rd <= '1';
 	      rf_rst <= '0';
-	-- REMOVE PLISS
-	   prc_en <= '1';
-	   -- REMOVE
+
+	    if ((op_b = "0110") or (op_b = "0111")) then -- LM/SM => iter
+	    	iter_in <= '1';
+	    	iter_en <= '1';
+	    elsif ((op_d = "0110") and (lm_fin = '1')) then -- LM Closing
+	    	iter_in <= '0';
+	    	iter_en <= '1';
+	    else
+	    	iter_en <= '0';
+	    end if;
+
+		prc_en <= p0_en;
+
 		prc_in <= palu_out;
 		if (contr_pa_out(18) = '1') then
 			rf_A1 <= sm_index;
@@ -197,13 +217,16 @@ process(clk, rst)
 		else
 			alu_1 <= ir_out_pb_80;
 		end if;
+
 		if (contr_pb_out(13 downto 12) = "00") then
 			alu_2 <= t2_out_pb;
 		elsif (contr_pb_out(13 downto 12) = "01") then
 			alu_2 <= npc_out_pb;
+		elsif (contr_pb_out(13 downto 12) = "11") then
+			alu_2 <= ir_out_pb_50;
 		else
-			-- iter
-
+			alu_2(0) <= iter_out;
+			alu_2(15 downto 1) <= (others => '0');
 		end if;
 
 
@@ -288,8 +311,8 @@ process(clk, rst)
 
 
 		-- Mapping of Pipe A
-		if (op_a = "0111") then
-			-- Flush
+		if ((op_a = "0111") or (op_b = "0111")) then
+			-- Flush SM
 			ir_in_pa <= (others => '1');
 			contr_in_pa <= (others => '0');
 
@@ -302,7 +325,17 @@ process(clk, rst)
 			memd_in_pa <= (others => '0');
 		elsif ((op_c = "0111") and (sm_fin = '0')) then
 			-- pc_out goes to pa_in
-			ir_in_pa <= ir_out_pc;
+
+			for i in 0 to 7 loop
+				if(to_integer(unsigned(sm_index)) = i) then
+					ir_in_pa(7 - i) <= '0';
+				else
+					ir_in_pa(7 - i) <= ir_out_pc(7 - i);
+				end if;
+			end loop;
+			--ir_in_pa <= ir_out_pc;
+			
+
 			npc_in_pa <= npc_out_pc;
 			t1_in_pa <= t1_out_pc;
 			t2_in_pa <= t2_out_pc;
@@ -326,9 +359,9 @@ process(clk, rst)
 			
 
 		-- Mapping of Pipe B
-		if (op_b = "0110") then
+		if ((op_b = "0110") or (op_c = "0110")) then
 			-- Flush
-			ir_in_pb <= (others => '1');
+			ir_in_pb <= (0 => '0', others => '1');
 			contr_in_pb <= (others => '0');
 
 			c_in_pb <= '0';
@@ -341,7 +374,17 @@ process(clk, rst)
 
 		elsif ((op_d = "0110") and (lm_fin = '0')) then
 			-- pb_in <= pd_out
-			ir_in_pb <= ir_out_pd;
+			-- ir_in_pb <= ir_out_pd;
+			
+			for i in 0 to 7 loop
+				if(to_integer(unsigned(lm_index)) = i) then
+					ir_in_pb(7 - i) <= '0';
+				else
+					ir_in_pb(7 - i) <= ir_out_pd(7 - i);
+				end if;
+			end loop;
+
+			ir_in_pb(15 downto 8) <= ir_out_pd(15 downto 8);
 			npc_in_pb <= npc_out_pd;
 			t1_in_pb <= t1_out_pd;
 			t2_in_pb <= t2_out_pd;
@@ -365,9 +408,21 @@ process(clk, rst)
 		end if;
 
 		-- Mapping of Pipe C
-		if (((op_b = "0010") or (op_b(3 downto 1) = "000")) and (op_c = "0100")) then -- LW and Arith
+		if (((op_b = "0010") or (op_b(3 downto 1) = "000") or (op_b = "0100")) and (op_c = "0100")) then -- LW and Arith
 			if ((op_b = "0001") and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) then -- ADI, checking RA only
 				-- Flush
+				ir_in_pc <= (others => '1');
+				contr_in_pc <= (others => '0');
+				c_in_pc <= '0';
+				z_in_pc <= '0';
+				npc_in_pc <= (others => '0');
+				t1_in_pc <= (others => '0');
+				t2_in_pc <= (others => '0');
+				t3_in_pc <= (others => '0');
+				memd_in_pc <= (others => '0');
+				pb_en <= '0';
+			elsif ((op_b = "0100") and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then -- LW - LW
+				-- Also flush
 				ir_in_pc <= (others => '1');
 				contr_in_pc <= (others => '0');
 				c_in_pc <= '0';
@@ -403,6 +458,17 @@ process(clk, rst)
 				c_in_pc <= c_out_pb;
 				z_in_pc <= z_out_pb;
 			end if;
+		elsif ((op_b = "0110") or (op_b = "0111")) then -- LM/SM means T1 updated
+			t1_in_pc <= malu_out;
+			t3_in_pc <= malu_out;
+			pb_en <= '1';
+			ir_in_pc <= ir_out_pb;
+			npc_in_pc <= npc_out_pb;
+			t2_in_pc <= t2_out_pb;
+			memd_in_pc <= memd_out_pb;
+			contr_in_pc <= contr_pb_out;
+			c_in_pc <= c_out_pb;
+			z_in_pc <= z_out_pb;
 		else
 			-- Directly Mapping from pb
 			t3_in_pc <= malu_out;
@@ -429,6 +495,16 @@ process(clk, rst)
 		c_in_pd <= c_out_pc;
 		z_in_pd <= z_out_pc;
 
+		--if (op_d = "0110") then -- LM Instruction
+			--for i in 0 to 7 loop
+			--	if(to_integer(unsigned(lm_index)) = i) then
+			--		ir_in_pb(7 - i) <= '0';
+			--	else
+			--		ir_in_pd(7 - i) <= ir_out(7 - i);
+			--	end if;
+			--end loop;
+		--end if;
+
 
 		-- Enable signals for the pipes: Stalling
 		
@@ -438,7 +514,7 @@ process(clk, rst)
 
 		-- Pipe A enable
 		if (((op_b = "0010") or (op_b(3 downto 1) = "000")) and (op_c = "0100")) then -- LW and Arith conditions
-			if (((op_b = "0001") and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) or (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)))) then -- Checking R-Match
+			if (((op_b = "0001") and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) or ((op_b = "0100") and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) or (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)))) then -- Checking R-Match
 				-- Flushing & Stalling
 				pa_en <= '0';
 			else
@@ -458,7 +534,7 @@ process(clk, rst)
 		elsif ((op_b = "0110") or (op_c = "0110") or ((op_d = "0110") and (lm_fin = '0'))) then -- LM and not complete
 			p0_en <= '0';
 		elsif (((op_b = "0010") or (op_b(3 downto 1) = "000")) and (op_c = "0100")) then -- LW and Arith conditions
-			if (((op_b = "0001") and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) or (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)))) then -- Checking R-Match
+			if (((op_b = "0001") and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) or ((op_b = "0100") and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) or (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)))) then -- Checking R-Match
 				-- Flushing & Stalling
 				p0_en <= '0';
 			else

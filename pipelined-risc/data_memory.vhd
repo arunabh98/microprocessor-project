@@ -23,7 +23,10 @@ architecture memory_behave of data_memory is
             mem_reg(0) <= "0000000000000011"; 
             mem_reg(1) <= "0000000000000000"; 
          -- mem_reg(1) <= "1001101001000000"; 
-			for i in 2 to 14 loop
+			for i in 2 to 4 loop
+				mem_reg(i) <= "0010101010101010"; 
+			end loop;
+			for i in 5 to 14 loop
 				mem_reg(i) <= "1111111111111111"; 
 			end loop;
 		elsif (rd = '1') then

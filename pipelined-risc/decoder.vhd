@@ -45,11 +45,18 @@ begin
 			alua_cen <= '1';
 			alua_zen <= '1';
 			alu_in1 <= "00";
-			alu_in2 <= "00";
+			
 			mem_r <= '0';
 			mem_a <= '0';
 			mem_wr <= '0';
 			rf_wr <= '1';   -- conditional ADC bleh bleh 
+
+			if (X = "0001") then -- ADI
+				alu_in2 <= "11";
+			else
+				alu_in2 <= "00";
+			end if;
+
 			if (X(1) = '0') then
 				alua_opc <= '0';
 			else 

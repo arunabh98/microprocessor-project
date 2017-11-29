@@ -29,7 +29,7 @@ architecture memory_behave of code_memory is
             mem_reg(6) <= "0000110001000000"; -- ADD 0 and 1 and store in 6
 
 				for i in 7 to 14 loop
-				mem_reg(i) <= "1111111111111111"; -- The End
+				mem_reg(i) <= "0111111111111110"; -- The End
 			end loop;
 		elsif (rd = '1') then
 			Y_out <= mem_reg(to_integer(unsigned(Add_in(3 downto 0))));

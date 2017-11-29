@@ -49,7 +49,7 @@ architecture pipelined of prisc is
 
 	component comparator is
 	  port ( X, Y : in std_logic_vector(15 downto 0);
-	  		eq : out std_logic);
+			eq : out std_logic);
 	end component ;
 
 	component rf is 
@@ -62,20 +62,20 @@ architecture pipelined of prisc is
 
 	component dregister_1 is                 -- no. of bits
 	  port (
-	    din  : in  std_logic;
-	    dout : out std_logic;
-	    enable: in std_logic;
-       rst : in std_logic;
-	    clk     : in  std_logic);
+		din  : in  std_logic;
+		dout : out std_logic;
+		enable: in std_logic;
+	   rst : in std_logic;
+		clk     : in  std_logic);
 	end component;
 
 	component dregister is                 -- no. of bits
 	  port (
-	    din  : in  std_logic_vector(15 downto 0);
-	    dout : out std_logic_vector(15 downto 0);
-	    enable: in std_logic;
-       rst : in std_logic;
-	    clk     : in  std_logic);
+		din  : in  std_logic_vector(15 downto 0);
+		dout : out std_logic_vector(15 downto 0);
+		enable: in std_logic;
+	   rst : in std_logic;
+		clk     : in  std_logic);
 	end component;
 
 	component se7 is 
@@ -126,7 +126,7 @@ pipe0: pipe port map (ir_in => ir_in_p0, npc_in => npc_in_p0, t1_in => t1_in_p0,
 						pipe_en => p0_en, rst => rst, clk => clk, ir_out => ir_out_p0, npc_out => npc_out_p0, contr_out => contr_p0_out, t1_out => t1_out_p0, t2_out => t2_out_p0,
 						t3_out => t3_out_p0, memd_out => memd_out_p0, c_in => c_in_p0, z_in => z_in_p0, c_out => c_out_p0, z_out => z_out_p0);
 -- Register Read
-rf_main: rf port map (rf_A1, rf_A2, rf_A3, rf_D3, clk, rf_wr, rf_rst, rf_D1, rf_D2);
+rf_main: rf port map (rf_A1, rf_A2, rf_A3, rf_D3, clk, rf_wr, rst, rf_D1, rf_D2);
 -- pipeA: pipe port map (ir_in => ir_out_p0, npc_in => npc_out_p0, t1_in => zeros, t2_in => zeros, t3_in => zeros, memd_in => zeros, contr_in => contr_pa_in, pipe_en => pa_en,
 --						clk => clk, ir_out => ir_out_pa, npc_out => npc_out_pa, contr_out => contr_pa_out);
 
@@ -160,41 +160,36 @@ sm_pe: pr_encoder port map (ir_out_pc(7 downto 0), sm_index, sm_fin);
 lm_pe: pr_encoder port map (ir_out_pd(7 downto 0), lm_index, lm_fin);
 
 process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd, contr_in_pd, rst,
-						pd_en, ir_out_pd, npc_out_pd, contr_pd_out, t1_out_pd, t2_out_pd,
-						t3_out_pd, memd_out_pd, c_in_pd, z_in_pd, c_out_pd, z_out_pd, ir_in_p0, npc_in_p0, t1_in_p0, t2_in_p0, t3_in_p0, memd_in_p0, contr_in_p0, rst,
-						p0_en, ir_out_p0, npc_out_p0, contr_p0_out, t1_out_p0, t2_out_p0,
-						t3_out_p0, memd_out_p0, c_in_p0, z_in_p0, c_out_p0, z_out_p0, ir_in_pa, npc_in_pa, t1_in_pa, t2_in_pa, t3_in_pa, memd_in_pa, contr_in_pa, rst,
-						pa_en, ir_out_pa, npc_out_pa, contr_pa_out, t1_out_pa, t2_out_pa,
-						t3_out_pa, memd_out_pa, c_in_pa, z_in_pa, c_out_pa, z_out_pa, ir_in_pb, npc_in_pb, t1_in_pb, t2_in_pb, t3_in_pb, memd_in_pb, contr_in_pb, rst,
-						pb_en, ir_out_pb, npc_out_pb, contr_pb_out, t1_out_pb, t2_out_pb,
-						t3_out_pb, memd_out_pb, c_in_pb, z_in_pb, c_out_pb, z_out_pb, ir_in_pc, npc_in_pc, t1_in_pc, t2_in_pc, t3_in_pc, memd_in_pc, contr_in_pc, rst,
-						pc_en, ir_out_pc, npc_out_pc, contr_pc_out, t1_out_pc, t2_out_pc,
-						t3_out_pc, memd_out_pc, c_in_pc, z_in_pc, c_out_pc, z_out_pc)
+		pd_en, ir_out_pd, npc_out_pd, contr_pd_out, t1_out_pd, t2_out_pd, t3_out_pd, memd_out_pd, c_in_pd, z_in_pd, c_out_pd, z_out_pd, ir_in_p0, npc_in_p0, t1_in_p0, t2_in_p0, t3_in_p0, memd_in_p0, contr_in_p0, rst,
+		p0_en, ir_out_p0, npc_out_p0, contr_p0_out, t1_out_p0, t2_out_p0, t3_out_p0, memd_out_p0, c_in_p0, z_in_p0, c_out_p0, z_out_p0, ir_in_pa, npc_in_pa, t1_in_pa, t2_in_pa, t3_in_pa, memd_in_pa, contr_in_pa, rst,
+		pa_en, ir_out_pa, npc_out_pa, contr_pa_out, t1_out_pa, t2_out_pa, t3_out_pa, memd_out_pa, c_in_pa, z_in_pa, c_out_pa, z_out_pa, ir_in_pb, npc_in_pb, t1_in_pb, t2_in_pb, t3_in_pb, memd_in_pb, contr_in_pb, rst,
+		pb_en, ir_out_pb, npc_out_pb, contr_pb_out, t1_out_pb, t2_out_pb, t3_out_pb, memd_out_pb, c_in_pb, z_in_pb, c_out_pb, z_out_pb, ir_in_pc, npc_in_pc, t1_in_pc, t2_in_pc, t3_in_pc, memd_in_pc, contr_in_pc, rst,
+		pc_en, ir_out_pc, npc_out_pc, contr_pc_out, t1_out_pc, t2_out_pc, t3_out_pc, memd_out_pc, c_in_pc, z_in_pc, c_out_pc, z_out_pc)
+	
 	begin
 	   if (rst = '1') then
-	      
-	      codemem_init <= '1';
-	      datamem_init <= '1';
-	      rf_rst <= '1';
-	   else
-	      codemem_init <= '0';
-	      datamem_init <= '0';
-	      datamem_rd <= '1';
-	      rf_rst <= '0';
+		  
+		  codemem_init <= '1';
+		  datamem_init <= '1';
 
-	    if ((op_b = "0110") or (op_b = "0111")) then -- LM/SM => iter
-	    	iter_in <= '1';
-	    	iter_en <= '1';
-	    elsif ((op_d = "0110") and (lm_fin = '1')) then -- LM Closing
-	    	iter_in <= '0';
-	    	iter_en <= '1';
-	    else
-	    	iter_en <= '0';
-	    end if;
+	   else
+		  codemem_init <= '0';
+		  datamem_init <= '0';
+		  datamem_rd <= '1';
+
+		if ((op_b = "0110") or (op_b = "0111")) then -- LM/SM => iter
+			iter_in <= '1';
+			iter_en <= '1';
+		elsif ((op_d = "0110") and (lm_fin = '1')) or ((op_d = "0111") and (sm_fin = '1')) then -- LM/SM Closing
+			iter_in <= '0';
+			iter_en <= '1';
+		else
+			iter_en <= '0';
+		end if;
 
 		prc_en <= p0_en;
+		prc_in <= palu_out; -- BEQ Pending
 
-		prc_in <= palu_out;
 		if (contr_pa_out(18) = '1') then
 			rf_A1 <= sm_index;
 		else
@@ -284,7 +279,7 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		
 		-- Mapping of Pipe 0
 		if ((op_b = "1100") and (branch_eq = '1')) then
-			-- Flush
+			-- Flush BEQ
 			ir_in_p0 <= (others => '1');
 			contr_in_p0 <= (others => '0');
 
@@ -311,7 +306,19 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 
 
 		-- Mapping of Pipe A
-		if ((op_a = "0111") or (op_b = "0111")) then
+		if ((op_b = "1100") and (branch_eq = '1')) then
+			-- Flush BEQ
+			ir_in_pa <= (others => '1');
+			contr_in_pa <= (others => '0');
+
+			c_in_pa <= '0';
+			z_in_pa <= '0';
+			npc_in_pa <= (others => '0');
+			t1_in_pa <= (others => '0');
+			t2_in_pa <= (others => '0');
+			t3_in_pa <= (others => '0');
+			memd_in_pa <= (others => '0');
+		elsif ((op_a = "0111") or (op_b = "0111")) then
 			-- Flush SM
 			ir_in_pa <= (others => '1');
 			contr_in_pa <= (others => '0');
@@ -335,7 +342,6 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 			end loop;
 			--ir_in_pa <= ir_out_pc;
 			
-
 			npc_in_pa <= npc_out_pc;
 			t1_in_pa <= t1_out_pc;
 			t2_in_pa <= t2_out_pc;
@@ -544,6 +550,6 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		else
 			p0_en <= '1';
 		end if;
-    end if;
+	end if;
 	end process;
 end pipelined;

@@ -20,11 +20,12 @@ architecture memory_behave of code_memory is
 		
 		if (init = '1') then
 			-- Initialise some memory
-            mem_reg(0) <= "0000000001010000"; -- ADD 0 1 2 
-            mem_reg(1) <= "0000111010011000"; -- ADD 7 2 3
-				mem_reg(2) <= "0000110010101010"; -- ADC 6 2 5
-            mem_reg(3) <= "0010100001000010"; -- ADC 4 1 0
-				for i in 4 to 14 loop
+            mem_reg(0) <= "0000000000000000"; -- ADD 0 0 0
+            mem_reg(1) <= "0100000000000001"; -- Load R0 m1
+            mem_reg(2) <= "0000000001010000"; -- ADD 0 1 2
+				mem_reg(3) <= "0000110010101010"; -- ADC 6 2 5
+            mem_reg(4) <= "0010100001000010"; -- ADC 4 1 0
+				for i in 5 to 14 loop
 				mem_reg(i) <= "1111111111111111"; -- The End
 			end loop;
 		elsif (rd = '1') then

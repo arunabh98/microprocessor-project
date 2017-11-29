@@ -366,7 +366,7 @@ process(clk, rst)
 
 		-- Mapping of Pipe C
 		if (((op_b = "0010") or (op_b(3 downto 1) = "000")) and (op_c = "0100")) then -- LW and Arith
-			if ((op_b = "0001") and (ir_out_pc(12 downto 10) = ir_out_pb(12 downto 10))) then -- ADI, checking RA only
+			if ((op_b = "0001") and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) then -- ADI, checking RA only
 				-- Flush
 				ir_in_pc <= (others => '1');
 				contr_in_pc <= (others => '0');
@@ -378,7 +378,7 @@ process(clk, rst)
 				t3_in_pc <= (others => '0');
 				memd_in_pc <= (others => '0');
 				pb_en <= '0';
-			elsif (ir_out_pc(12 downto 10) = ir_out_pb(12 downto 10) or (ir_out_pc(12 downto 10) = ir_out_pb(9 downto 7))) then
+			elsif (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
 				-- Also flush
 				ir_in_pc <= (others => '1');
 				contr_in_pc <= (others => '0');
@@ -438,7 +438,7 @@ process(clk, rst)
 
 		-- Pipe A enable
 		if (((op_b = "0010") or (op_b(3 downto 1) = "000")) and (op_c = "0100")) then -- LW and Arith conditions
-			if (((op_b = "0001") and (ir_out_pc(12 downto 10) = ir_out_pb(12 downto 10))) or (ir_out_pc(12 downto 10) = ir_out_pb(12 downto 10) or (ir_out_pc(12 downto 10) = ir_out_pb(9 downto 7)))) then -- Checking R-Match
+			if (((op_b = "0001") and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) or (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)))) then -- Checking R-Match
 				-- Flushing & Stalling
 				pa_en <= '0';
 			else
@@ -458,7 +458,7 @@ process(clk, rst)
 		elsif ((op_b = "0110") or (op_c = "0110") or ((op_d = "0110") and (lm_fin = '0'))) then -- LM and not complete
 			p0_en <= '0';
 		elsif (((op_b = "0010") or (op_b(3 downto 1) = "000")) and (op_c = "0100")) then -- LW and Arith conditions
-			if (((op_b = "0001") and (ir_out_pc(12 downto 10) = ir_out_pb(12 downto 10))) or (ir_out_pc(12 downto 10) = ir_out_pb(12 downto 10) or (ir_out_pc(12 downto 10) = ir_out_pb(9 downto 7)))) then -- Checking R-Match
+			if (((op_b = "0001") and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) or (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)))) then -- Checking R-Match
 				-- Flushing & Stalling
 				p0_en <= '0';
 			else

@@ -20,7 +20,7 @@ architecture memory_behave of data_memory is
 		
 		if (init = '1') then
 			-- Initialise some memory
-            mem_reg(0) <= "0000000000000001"; 
+            mem_reg(0) <= "0000000000000011"; 
             mem_reg(1) <= "0000000000000000"; 
          -- mem_reg(1) <= "1001101001000000"; 
 			for i in 2 to 14 loop

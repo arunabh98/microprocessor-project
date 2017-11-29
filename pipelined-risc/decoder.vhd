@@ -151,7 +151,7 @@ begin
 			mem_a <= '1';
 			mem_wr <= '1';
 
-	    elsif (X = "1100") then
+	    elsif (X = "1100") then -- BEQ
 
 	    	A1 <= '0';
 			A2 <= '0';
@@ -160,7 +160,7 @@ begin
 			rf_r <= '1';
 			rf_wr <= '0';
 			alua_opc <= '0';
-			alua_en <= '1';
+			alua_en <= '0'; -- :Ds
 			alua_cen <= '0';
 			alua_zen <= '0';
 			alu_in1 <= "01";
@@ -170,7 +170,7 @@ begin
 			mem_wr <= '1';
 
 
-	    elsif (X = "1000") then
+	    elsif (X = "1000") then -- JAL
 
 	    	A1 <= '0';
 			A2 <= '0';
@@ -179,7 +179,7 @@ begin
 			rf_r <= '0';
 			rf_wr <= '1';
 			alua_opc <= '0';
-			alua_en <= '1';
+			alua_en <= '0'; -- :D
 			alua_cen <= '0';
 			alua_zen <= '0';
 			alu_in1 <= "10";

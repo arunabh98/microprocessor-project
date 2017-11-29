@@ -240,7 +240,9 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		end if;
 
 		-- RF_WB signals dep on contr_pd_out
-		if (contr_pd_out(4 downto 3) = "01") then
+		if (op_d = "0001") then -- ADI immed
+			rf_A3 <= ir_out_pd(8 downto 6);
+		elsif (contr_pd_out(4 downto 3) = "01") then
 			rf_A3 <= ir_out_pd(5 downto 3);
 		elsif (contr_pd_out(4 downto 3) = "10") then
 			rf_A3 <= ir_out_pd(11 downto 9);
@@ -365,9 +367,9 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 			
 
 		-- Mapping of Pipe B
-		if ((op_b = "0110") or (op_c = "0110")) then
+		if ((op_a = "1001") and (op_b = "0100")) then -- JLR and LW Stall
 			-- Flush
-			ir_in_pb <= (0 => '0', others => '1');
+			ir_in_pb <= (others => '1');
 			contr_in_pb <= (others => '0');
 
 			c_in_pb <= '0';
@@ -377,7 +379,19 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 			t2_in_pb <= (others => '0');
 			t3_in_pb <= (others => '0');
 			memd_in_pb <= (others => '0');
+		end if ;
+		if ((op_b = "0110") or (op_c = "0110")) then
+			-- Flush
+			ir_in_pb <= (others => '1');
+			contr_in_pb <= (others => '0');
 
+			c_in_pb <= '0';
+			z_in_pb <= '0';
+			npc_in_pb <= (others => '0');
+			t1_in_pb <= (others => '0');
+			t2_in_pb <= (others => '0');
+			t3_in_pb <= (others => '0');
+			memd_in_pb <= (others => '0');
 		elsif ((op_d = "0110") and (lm_fin = '0')) then
 			-- pb_in <= pd_out
 			-- ir_in_pb <= ir_out_pd;
@@ -414,8 +428,8 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		end if;
 
 		-- Mapping of Pipe C
-		if (((op_b = "0010") or (op_b(3 downto 1) = "000") or (op_b = "0100")) and (op_c = "0100")) then -- LW and Arith
-			if ((op_b = "0001") and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) then -- ADI, checking RA only
+		if ((contr_pb_out(10) = '1') and (contr_pc_out(10) = '1')) then -- Control bits FTW
+			if (((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) then -- ADI & LM, checking RA only
 				-- Flush
 				ir_in_pc <= (others => '1');
 				contr_in_pc <= (others => '0');
@@ -427,7 +441,7 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 				t3_in_pc <= (others => '0');
 				memd_in_pc <= (others => '0');
 				pb_en <= '0';
-			elsif ((op_b = "0100") and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then -- LW - LW
+			elsif (((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then -- SW/LW - LW
 				-- Also flush
 				ir_in_pc <= (others => '1');
 				contr_in_pc <= (others => '0');
@@ -440,7 +454,7 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 				memd_in_pc <= (others => '0');
 				pb_en <= '0';
 			elsif (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
-				-- Also flush
+				-- Also flush; checking either registers; arith normal
 				ir_in_pc <= (others => '1');
 				contr_in_pc <= (others => '0');
 				c_in_pc <= '0';
@@ -519,14 +533,23 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		-- pb_en updated while mapping pipe C (refer flushing logic above)
 
 		-- Pipe A enable
-		if (((op_b = "0010") or (op_b(3 downto 1) = "000")) and (op_c = "0100")) then -- LW and Arith conditions
-			if (((op_b = "0001") and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) or ((op_b = "0100") and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) or (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)))) then -- Checking R-Match
-				-- Flushing & Stalling
+		if ((op_a = "1001") and (op_b = "0100")) then --  Flush in PB
+			pa_en <= '0';
+		elsif ((contr_pb_out(10) = '1') and (contr_pc_out(10) = '1')) then -- LW and Arith conditions
+			if (((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) then -- ADI & LM, checking RA only
+				-- Flush
+				pa_en <= '0';
+			elsif (((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then -- SW/LW - LW
+				-- Also flush
+				pa_en <= '0';
+			elsif (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
 				pa_en <= '0';
 			else
 				-- Register match failed; Load-Arith implies no LM, hence no stall
 				pa_en <= '1';
 			end if;
+		elsif ((op_a = "1001") and (op_b = "0100")) then
+			pa_en <= '0';
 		elsif ((op_b = "0110") or (op_c = "0110") or ((op_d = "0110") and (lm_fin = '0'))) then -- LM and not complete
 			pa_en <= '0';
 		else
@@ -534,15 +557,22 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		end if;
 
 		-- Pipe 0 enable
-		if ((op_a = "0111") or (op_b = "0111") or ((op_c = "0111") and (sm_fin = '0'))) then -- SM and not complete
+		if ((op_a = "1001") and (op_b = "0100")) then -- Flush in PB
+			p0_en <= '0';
+		elsif ((op_a = "0111") or (op_b = "0111") or ((op_c = "0111") and (sm_fin = '0'))) then -- SM and not complete
 			-- Stall
 			p0_en <= '0';
 		elsif ((op_b = "0110") or (op_c = "0110") or ((op_d = "0110") and (lm_fin = '0'))) then -- LM and not complete
 			p0_en <= '0';
-		elsif (((op_b = "0010") or (op_b(3 downto 1) = "000")) and (op_c = "0100")) then -- LW and Arith conditions
-			if (((op_b = "0001") and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) or ((op_b = "0100") and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) or (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)))) then -- Checking R-Match
-				-- Flushing & Stalling
-				p0_en <= '0';
+		elsif ((contr_pb_out(10) = '1') and (contr_pc_out(10) = '1')) then -- LW and Arith conditions
+			if (((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) then -- ADI & LM, checking RA only
+				-- Flush
+				pa_en <= '0';
+			elsif (((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then -- SW/LW - LW
+				-- Also flush
+				pa_en <= '0';
+			elsif (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
+				pa_en <= '0';
 			else
 				-- Register match failed; No LM-SM either, and hence clear.
 				pa_en <= '1';

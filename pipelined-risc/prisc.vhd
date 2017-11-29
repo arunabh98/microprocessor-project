@@ -52,12 +52,12 @@ architecture pipelined of prisc is
 			eq : out std_logic);
 	end component ;
 
-	component rf is 
+	component rf_comp is 
 		port( A1,A2,A3 : in std_logic_vector(2 downto 0);
-			  D3: in std_logic_vector(15 downto 0);
+			  D3, D_pc_in: in std_logic_vector(15 downto 0);
 			  
-			clk,wr, reset: in std_logic ; -- No separate control for PC required; simply drive 111 to A_
-			D1, D2: out std_logic_vector(15 downto 0));
+			clk,wr, reset, pc_wr: in std_logic ; -- No separate control for PC required; simply drive 111 to A_
+			D1, D2, D_pc_out: out std_logic_vector(15 downto 0));
 	end component;
 
 	component dregister_1 is                 -- no. of bits
@@ -126,9 +126,7 @@ pipe0: pipe port map (ir_in => ir_in_p0, npc_in => npc_in_p0, t1_in => t1_in_p0,
 						pipe_en => p0_en, rst => rst, clk => clk, ir_out => ir_out_p0, npc_out => npc_out_p0, contr_out => contr_p0_out, t1_out => t1_out_p0, t2_out => t2_out_p0,
 						t3_out => t3_out_p0, memd_out => memd_out_p0, c_in => c_in_p0, z_in => z_in_p0, c_out => c_out_p0, z_out => z_out_p0);
 -- Register Read
-rf_main: rf port map (rf_A1, rf_A2, rf_A3, rf_D3, clk, rf_wr, rst, rf_D1, rf_D2);
--- pipeA: pipe port map (ir_in => ir_out_p0, npc_in => npc_out_p0, t1_in => zeros, t2_in => zeros, t3_in => zeros, memd_in => zeros, contr_in => contr_pa_in, pipe_en => pa_en,
---						clk => clk, ir_out => ir_out_pa, npc_out => npc_out_pa, contr_out => contr_pa_out);
+--rf_main: rf port map (rf_A1, rf_A2, rf_A3, rf_D3, rf_PC, clk, rf_wr, rst, rf_D1, rf_D2);
 
 pipeA: pipe port map (ir_in => ir_in_pa, npc_in => npc_in_pa, t1_in => t1_in_pa, t2_in => t2_in_pa, t3_in => t3_in_pa, memd_in => memd_in_pa, contr_in => contr_in_pa, rst => rst,
 						pipe_en => pa_en, clk => clk, ir_out => ir_out_pa, npc_out => npc_out_pa, contr_out => contr_pa_out, t1_out => t1_out_pa, t2_out => t2_out_pa,
@@ -367,7 +365,7 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 			
 
 		-- Mapping of Pipe B
-		if ((op_a = "1001") and (op_b = "0100")) then -- JLR and LW Stall
+		if ((op_a = "1001") and (op_b = "0100") and (ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9))) then -- JLR and LW flush
 			-- Flush
 			ir_in_pb <= (others => '1');
 			contr_in_pb <= (others => '0');
@@ -379,8 +377,7 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 			t2_in_pb <= (others => '0');
 			t3_in_pb <= (others => '0');
 			memd_in_pb <= (others => '0');
-		end if ;
-		if ((op_b = "0110") or (op_c = "0110")) then
+		elsif ((op_b = "0110") or (op_c = "0110")) then
 			-- Flush
 			ir_in_pb <= (others => '1');
 			contr_in_pb <= (others => '0');
@@ -515,17 +512,6 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		c_in_pd <= c_out_pc;
 		z_in_pd <= z_out_pc;
 
-		--if (op_d = "0110") then -- LM Instruction
-			--for i in 0 to 7 loop
-			--	if(to_integer(unsigned(lm_index)) = i) then
-			--		ir_in_pb(7 - i) <= '0';
-			--	else
-			--		ir_in_pd(7 - i) <= ir_out(7 - i);
-			--	end if;
-			--end loop;
-		--end if;
-
-
 		-- Enable signals for the pipes: Stalling
 		
 		pd_en <= '1';
@@ -533,7 +519,7 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		-- pb_en updated while mapping pipe C (refer flushing logic above)
 
 		-- Pipe A enable
-		if ((op_a = "1001") and (op_b = "0100")) then --  Flush in PB
+		if ((op_a = "1001") and (op_b = "0100") and (ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9))) -- Flush in PB
 			pa_en <= '0';
 		elsif ((contr_pb_out(10) = '1') and (contr_pc_out(10) = '1')) then -- LW and Arith conditions
 			if (((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) then -- ADI & LM, checking RA only
@@ -557,7 +543,7 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		end if;
 
 		-- Pipe 0 enable
-		if ((op_a = "1001") and (op_b = "0100")) then -- Flush in PB
+		if ((op_a = "1001") and (op_b = "0100") and (ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9))) -- Flush in PB
 			p0_en <= '0';
 		elsif ((op_a = "0111") or (op_b = "0111") or ((op_c = "0111") and (sm_fin = '0'))) then -- SM and not complete
 			-- Stall

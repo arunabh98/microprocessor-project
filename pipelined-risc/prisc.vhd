@@ -114,7 +114,7 @@ signal op_a, op_b, op_c, op_d : std_logic_vector (3 downto 0) := "0000";
 begin
 
 -- Instruction Fetch
-pc: dregister port map (prc_in, prc_out, prc_en, rst, clk);
+-- pc: dregister port map (prc_in, prc_out, prc_en, rst, clk);
 codemem: code_memory port map ('0', '1', codemem_init, prc_out, zeros, codemem_out);
 palu: alu port map (X => prc_out, Y => one, x0 => '1', x1 => '1', C_in => '0', S => palu_out);
 -- Instruction Decode
@@ -127,6 +127,7 @@ pipe0: pipe port map (ir_in => ir_in_p0, npc_in => npc_in_p0, t1_in => t1_in_p0,
 						t3_out => t3_out_p0, memd_out => memd_out_p0, c_in => c_in_p0, z_in => z_in_p0, c_out => c_out_p0, z_out => z_out_p0);
 -- Register Read
 --rf_main: rf port map (rf_A1, rf_A2, rf_A3, rf_D3, rf_PC, clk, rf_wr, rst, rf_D1, rf_D2);
+rf_main: rf_comp port map(rf_A1, rf_A2, rf_A3, rf_D3, prc_in, clk, rf_wr, rst, prc_en, rf_D1, rf_D2, prc_out);
 
 pipeA: pipe port map (ir_in => ir_in_pa, npc_in => npc_in_pa, t1_in => t1_in_pa, t2_in => t2_in_pa, t3_in => t3_in_pa, memd_in => memd_in_pa, contr_in => contr_in_pa, rst => rst,
 						pipe_en => pa_en, clk => clk, ir_out => ir_out_pa, npc_out => npc_out_pa, contr_out => contr_pa_out, t1_out => t1_out_pa, t2_out => t2_out_pa,
@@ -290,6 +291,48 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 			t2_in_p0 <= (others => '0');
 			t3_in_p0 <= (others => '0');
 			memd_in_p0 <= (others => '0');
+
+		elsif (contr_pb_out(0) = '1') then -- Arith
+			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
+				-- Flush Arith, LW, LHI, LM
+				ir_in_pb <= (others => '1');
+				contr_in_pb <= (others => '0');
+
+				c_in_pb <= '0';
+				z_in_pb <= '0';
+				npc_in_pb <= (others => '0');
+				t1_in_pb <= (others => '0');
+				t2_in_pb <= (others => '0');
+				t3_in_pb <= (others => '0');
+				memd_in_pb <= (others => '0');
+
+			else
+				-- pb_in <= pa_out
+				t1_in_pb <= rf_D1;
+				t2_in_pb <= rf_D2;
+
+				ir_in_pb <= ir_out_pa;
+				npc_in_pb <= npc_out_pa;
+				t3_in_pb <= t3_out_pa;
+				memd_in_pb <= memd_out_pa;
+				contr_in_pb <= contr_pa_out;
+				c_in_pb <= c_out_pa;
+				z_in_pb <= z_out_pa;
+
+			end if;
+
+		elsif (op_b = "1000" or op_a = "1001") then --JAL and JLR
+			ir_in_p0 <= (others => '1');
+			contr_in_p0 <= (others => '0');
+
+			c_in_p0 <= '0';
+			z_in_p0 <= '0';
+			npc_in_p0 <= (others => '0');
+			t1_in_p0 <= (others => '0');
+			t2_in_p0 <= (others => '0');
+			t3_in_p0 <= (others => '0');
+			memd_in_p0 <= (others => '0');
+
 		else
 			-- P0 directly from flow
 			ir_in_p0 <= codemem_out;
@@ -318,6 +361,50 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 			t2_in_pa <= (others => '0');
 			t3_in_pa <= (others => '0');
 			memd_in_pa <= (others => '0');
+
+		elsif ( contr_pb_out(0) = '1' ) then -- Arith R7
+
+			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
+				-- Flush Arith, LW, LHI, LM
+				ir_in_pb <= (others => '1');
+				contr_in_pb <= (others => '0');
+
+				c_in_pb <= '0';
+				z_in_pb <= '0';
+				npc_in_pb <= (others => '0');
+				t1_in_pb <= (others => '0');
+				t2_in_pb <= (others => '0');
+				t3_in_pb <= (others => '0');
+				memd_in_pb <= (others => '0');
+
+			else
+				-- pb_in <= pa_out
+				t1_in_pb <= rf_D1;
+				t2_in_pb <= rf_D2;
+
+				ir_in_pb <= ir_out_pa;
+				npc_in_pb <= npc_out_pa;
+				t3_in_pb <= t3_out_pa;
+				memd_in_pb <= memd_out_pa;
+				contr_in_pb <= contr_pa_out;
+				c_in_pb <= c_out_pa;
+				z_in_pb <= z_out_pa;
+
+			end if;
+
+		elsif (op_b = "1000" and op_a = "1001") then
+			-- Flush due to JAL and JLR
+			ir_in_pa <= (others => '1');
+			contr_in_pa <= (others => '0');
+
+			c_in_pa <= '0';
+			z_in_pa <= '0';
+			npc_in_pa <= (others => '0');
+			t1_in_pa <= (others => '0');
+			t2_in_pa <= (others => '0');
+			t3_in_pa <= (others => '0');
+			memd_in_pa <= (others => '0');
+				
 		elsif ((op_a = "0111") or (op_b = "0111")) then
 			-- Flush SM
 			ir_in_pa <= (others => '1');
@@ -377,7 +464,7 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 			t2_in_pb <= (others => '0');
 			t3_in_pb <= (others => '0');
 			memd_in_pb <= (others => '0');
-		elsif ((op_b = "0110") or (op_c = "0110")) then
+		elsif ((op_b = "0110") or (op_c = "0110")) then --LM
 			-- Flush
 			ir_in_pb <= (others => '1');
 			contr_in_pb <= (others => '0');
@@ -389,6 +476,64 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 			t2_in_pb <= (others => '0');
 			t3_in_pb <= (others => '0');
 			memd_in_pb <= (others => '0');
+
+		elsif ((op_b = "1100") and (branch_eq = '1')) then --BEQ
+		-- Flush
+			ir_in_pb <= (others => '1');
+			contr_in_pb <= (others => '0');
+
+			c_in_pb <= '0';
+			z_in_pb <= '0';
+			npc_in_pb <= (others => '0');
+			t1_in_pb <= (others => '0');
+			t2_in_pb <= (others => '0');
+			t3_in_pb <= (others => '0');
+			memd_in_pb <= (others => '0');
+
+		
+		elsif (contr_pb_out(0) = '1') then -- Arith R7
+
+			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
+				-- Flush Arith, LW, LHI, LM
+				ir_in_pb <= (others => '1');
+				contr_in_pb <= (others => '0');
+
+				c_in_pb <= '0';
+				z_in_pb <= '0';
+				npc_in_pb <= (others => '0');
+				t1_in_pb <= (others => '0');
+				t2_in_pb <= (others => '0');
+				t3_in_pb <= (others => '0');
+				memd_in_pb <= (others => '0');
+
+			else
+				-- pb_in <= pa_out
+				t1_in_pb <= rf_D1;
+				t2_in_pb <= rf_D2;
+
+				ir_in_pb <= ir_out_pa;
+				npc_in_pb <= npc_out_pa;
+				t3_in_pb <= t3_out_pa;
+				memd_in_pb <= memd_out_pa;
+				contr_in_pb <= contr_pa_out;
+				c_in_pb <= c_out_pa;
+				z_in_pb <= z_out_pa;
+
+			end if;
+
+		elsif (op_b = "1000") then -- JAL
+			-- Flush
+			ir_in_pb <= (others => '1');
+			contr_in_pb <= (others => '0');
+
+			c_in_pb <= '0';
+			z_in_pb <= '0';
+			npc_in_pb <= (others => '0');
+			t1_in_pb <= (others => '0');
+			t2_in_pb <= (others => '0');
+			t3_in_pb <= (others => '0');
+			memd_in_pb <= (others => '0');
+
 		elsif ((op_d = "0110") and (lm_fin = '0')) then
 			-- pb_in <= pd_out
 			-- ir_in_pb <= ir_out_pd;
@@ -521,6 +666,15 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		-- Pipe A enable
 		if ((op_a = "1001") and (op_b = "0100") and (ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9))) -- Flush in PB
 			pa_en <= '0';
+		elsif (contr_pb_out(0) = '1') then -- Arith R7
+
+			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
+				pa_en <= '1';
+
+			else
+				pa_en <= '0';
+			end if;
+
 		elsif ((contr_pb_out(10) = '1') and (contr_pc_out(10) = '1')) then -- LW and Arith conditions
 			if (((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9))) then -- ADI & LM, checking RA only
 				-- Flush
@@ -530,11 +684,14 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 				pa_en <= '0';
 			elsif (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
 				pa_en <= '0';
+
+			elsif ((op_a = "1001") and (op_b = "0100") and (ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9))) then
+				pa_en <= '0';
 			else
 				-- Register match failed; Load-Arith implies no LM, hence no stall
 				pa_en <= '1';
 			end if;
-		elsif ((op_a = "1001") and (op_b = "0100")) then
+		elsif ((op_a = "1001") and (op_b = "0100")) then --JLR LW stall
 			pa_en <= '0';
 		elsif ((op_b = "0110") or (op_c = "0110") or ((op_d = "0110") and (lm_fin = '0'))) then -- LM and not complete
 			pa_en <= '0';
@@ -543,8 +700,17 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		end if;
 
 		-- Pipe 0 enable
-		if ((op_a = "1001") and (op_b = "0100") and (ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9))) -- Flush in PB
+		if ((op_a = "1001") and (op_b = "0100") and (ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9))) then-- Flush in PB due to JLR LW
 			p0_en <= '0';
+		elsif (contr_pb_out(0) = '1') then -- Arith R7
+
+			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
+				p0_en <= '1';
+
+			else
+				p0_en <= '0';
+
+			end if;
 		elsif ((op_a = "0111") or (op_b = "0111") or ((op_c = "0111") and (sm_fin = '0'))) then -- SM and not complete
 			-- Stall
 			p0_en <= '0';

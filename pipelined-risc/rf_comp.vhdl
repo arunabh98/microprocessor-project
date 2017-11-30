@@ -31,10 +31,8 @@ begin
 				registers(i) <= "0000000000000000";
 			end loop;
 		else
-         	if ((wr = '1') and (A3 = "111")) then
-	   		   registers(to_integer(unsigned(A3))) <= D3;
-	   		else
-	   			if (wr = '1') then
+         	if (not ((wr = '1') and (A3 = "111"))) then
+	   		   if (wr = '1') then
 	   				registers(to_integer(unsigned(A3))) <= D3;
 	   			end if;
 	   			if (pc_wr = '1') then

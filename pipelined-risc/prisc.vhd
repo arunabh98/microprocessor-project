@@ -239,7 +239,7 @@ begin
 			comp_2in <= datamem_out;
 		else
 			comp_1in <= t1_out_pb;
-			comp_2in <= memd_out_pd;
+			comp_2in <= t2_out_pb;
 		end if;
 
 

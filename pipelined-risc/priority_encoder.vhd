@@ -38,8 +38,10 @@ begin
 
 	if (x_in = "00000000") then
 		x_none <= '1';
+		x_out <= "000";
 	else 
 		x_none <= '0';
+		x_out <= "000";
 	end if;
 
 end process;

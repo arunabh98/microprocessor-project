@@ -309,7 +309,7 @@ begin
 				end if ;					
 			end if;
 
-		--Src = Lw, SW
+		--Src = LW, SW
 		elsif (((op_b = "0101") or (op_b = "0100")) and ((op_c = "0000") or (op_c = "0010")) and ( ir_out_pc(5 downto 3) = ir_out_pb(8 downto 6) ) ) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
 			alu_1 <= ir_out_pb_50;
 			alu_2 <= t3_out_pc;
@@ -345,7 +345,7 @@ begin
 			end if ;
 		
 		-- Forwarding from Pd to Pb
-
+		--Src = Arith, BEQ
 		elsif (((op_b = "0000") or (op_b = "0010") or (op_b = "1100")) and ((op_d = "0000") or (op_d = "0010")) and (ir_out_pd(5 downto 3) = ir_out_pb(11 downto 9) or ir_out_pd(5 downto 3) = ir_out_pb(8 downto 6) ) ) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
 			if ( ir_out_pd(5 downto 3) = ir_out_pb(11 downto 9) ) then
 				alu_1 <= t3_out_pd;
@@ -382,7 +382,7 @@ begin
 				end if ;					
 			end if;
 
-		elsif ( ( (op_b = "0000") or (op_b = "0010") or (op_b = "1100")) and (op_d = "0100") and (( ir_out_pd(11 downto 9) = ir_out_pb(11 downto 9) or ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6) )) ) then --Arith _ LW
+		elsif ( ( (op_b = "0000") or (op_b = "0010") or (op_b = "1100")) and (op_d = "0100") and (( ir_out_pd(11 downto 9) = ir_out_pb(11 downto 9) or ir_out_pd(11 downto 9) = ir_out_pb(8 downto 6) )) ) then --Arith _ LW
 			if ( ir_out_pd(11 downto 9) = ir_out_pb(11 downto 9) ) then
 				alu_1 <= memd_out_pd;
 				alu_2 <= t2_out_pb;
@@ -392,7 +392,7 @@ begin
 				alu_2 <= memd_out_pd;
 			end if;
 
-		--Src = Lw, SW
+		--Src = LW, SW
 		elsif (((op_b = "0101") or (op_b = "0100")) and ((op_d = "0000") or (op_d = "0010")) and ( ir_out_pd(5 downto 3) = ir_out_pb(8 downto 6) ) ) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
 			alu_1 <= ir_out_pb_50;
 			alu_2 <= t3_out_pd;
@@ -407,6 +407,10 @@ begin
 				alu_1 <= ir_out_pb_50;
 				alu_2 <= npc_out_pd;
 			end if ;
+		elsif ( ( (op_b = "0101") or (op_b = "0100") ) and (op_d = "0100") and ( ir_out_pd(11 downto 9) = ir_out_pb(8 downto 6) ) ) then --Arith _ LW
+				alu_1 <= ir_out_pb_50;
+				alu_2 <= memd_out_pd;
+	
 		--Src = LM, SM
 		elsif (((op_b = "0111") or (op_b = "0110")) and ((op_d = "0000") or (op_d = "0010")) and (ir_out_pd(5 downto 3) = ir_out_pb(11 downto 9)) ) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
 			alu_1 <= t3_out_pd;
@@ -426,8 +430,10 @@ begin
 				alu_2(0) <= iter_out;
 				alu_2(15 downto 1) <= (others => '0');
 			end if ;
-		
-
+		elsif ( ((op_b = "0111") or (op_b = "0110")) and (op_d = "0100") and ( ir_out_pd(11 downto 9) = ir_out_pb(11 downto 9) ) ) then --Arith _ LW
+				alu_1 <= memd_out_pd;
+				alu_2(0) <= iter_out;
+				alu_2(15 downto 1) <= (others => '0');	
 
 		else -- Follow normal logic
 			if (contr_pb_out(15 downto 14) = "00") then
@@ -1056,6 +1062,24 @@ begin
 				end if ;					
 			end if;
 
+		elsif ( ( (op_b = "0000") or (op_b = "0010") or (op_b = "1100")) and (op_d = "0100") and (( ir_out_pd(11 downto 9) = ir_out_pb(11 downto 9) or ir_out_pd(11 downto 9) = ir_out_pb(8 downto 6) )) ) then --Arith _ LW
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pa;
+			t3_in_pb <= t3_out_pa;
+			memd_in_pb <= memd_out_pa;
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+			if ( ir_out_pd(11 downto 9) = ir_out_pb(11 downto 9) ) then
+				t1_in_pb <= memd_out_pd; -- *Check
+				t2_in_pb <= rf_D2;	
+			
+			else
+				t1_in_pb <= rf_D1;
+				t2_in_pb <= memd_out_pd;
+			end if;			
+
 		--Src = LW, SW
 		elsif (((op_a = "0101") or (op_a = "0100")) and ((op_d = "0000") or (op_d = "0010")) and ( ir_out_pd(5 downto 3) = ir_out_pa(8 downto 6) ) ) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
 			ir_in_pb <= ir_out_pa;
@@ -1095,6 +1119,19 @@ begin
 				t1_in_pb <= ir_out_pa_50;
 				t2_in_pb <= npc_out_pd;
 			end if ;
+
+		elsif ( ( (op_b = "0101") or (op_b = "0100") ) and (op_d = "0100") and ( ir_out_pd(11 downto 9) = ir_out_pb(8 downto 6) ) ) then --Arith _ LW
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pa;
+			t3_in_pb <= t3_out_pa;
+			memd_in_pb <= memd_out_pa;
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+			t1_in_pb <= ir_out_pa_50;
+			t2_in_pb <= memd_out_pd;
+
 		--Src = LM, SM
 		elsif (((op_a = "0111") or (op_a = "0110")) and ((op_d = "0000") or (op_d = "0010")) and (ir_out_pd(5 downto 3) = ir_out_pa(11 downto 9)) ) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
 			ir_in_pb <= ir_out_pa;
@@ -1138,6 +1175,19 @@ begin
 				t2_in_pb(0) <= iter_out;
 				t2_in_pb(15 downto 1) <= (others => '0');
 			end if ;
+
+		elsif ( ( (op_b = "0101") or (op_b = "0100") ) and (op_d = "0100") and ( ir_out_pd(11 downto 9) = ir_out_pb(8 downto 6) ) ) then --Arith _ LW
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pa;
+			t3_in_pb <= t3_out_pa;
+			memd_in_pb <= memd_out_pa;
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;				
+
+			t1_in_pb <= memd_out_pd;
+			t2_in_pb(0) <= iter_out;
+			t2_in_pb(15 downto 1) <= (others => '0');
 
 		-- Default
 		else 

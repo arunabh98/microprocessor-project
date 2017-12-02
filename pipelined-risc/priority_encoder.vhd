@@ -19,21 +19,21 @@ process (x_in)
 begin
 
 	if(x_in(0) = '1') then
-		x_out <= "111";
-	elsif(x_in(1) = '1') then
-		x_out <= "110";
-	elsif(x_in(2) = '1') then
-		x_out <= "101";
-	elsif(x_in(3) = '1') then
-		x_out <= "100";	
-	elsif(x_in(4) = '1') then
-		x_out <= "011";
-	elsif(x_in(5) = '1') then
-		x_out <= "010";
-	elsif(x_in(6) = '1') then
-		x_out <= "001";
-	elsif(x_in(7) = '1') then
 		x_out <= "000";
+	elsif(x_in(1) = '1') then
+		x_out <= "001";
+	elsif(x_in(2) = '1') then
+		x_out <= "010";
+	elsif(x_in(3) = '1') then
+		x_out <= "011";	
+	elsif(x_in(4) = '1') then
+		x_out <= "100";
+	elsif(x_in(5) = '1') then
+		x_out <= "101";
+	elsif(x_in(6) = '1') then
+		x_out <= "110";
+	elsif(x_in(7) = '1') then
+		x_out <= "111";
 	end if; 
 
 	if (x_in = "00000000") then

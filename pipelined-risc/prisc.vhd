@@ -112,6 +112,7 @@ signal pe_out,rf_A1,rf_A2,rf_A3, lm_index, sm_index : std_logic_vector(2 downto 
 signal op_0, op_a, op_b, op_c, op_d : std_logic_vector (3 downto 0) := "0000";
 signal pc_in, pc_out : std_logic_vector(15 downto 0) := "0000000000000000"; --R7 PC
 signal r7_en : std_logic := '0'; -- R7_en
+signal comp_1in, comp_2in : std_logic_vector(15 downto 9) := "0000000000000000"; -- comparator inputs
 
 begin
 
@@ -153,10 +154,11 @@ pipeD: pipe port map (ir_in => ir_in_pd, npc_in => npc_in_pd, t1_in => t1_in_pd,
 alu_se10: se10 port map (ir_out_pb(5 downto 0), ir_out_pb_50); -- sign extended for alu_1
 alu_se7: se7 port map (ir_out_pb(8 downto 0), '1', ir_out_pb_80);
 pd_se7: se7 port map (ir_out_pd(8 downto 0), '0', ir_out_pd_80);
+pc_se7: se7 port map (ir_out_pc(8 downto 0), '0', ir_out_pc_80);
 car: dregister_1 port map (cin, cout, cen, rst, clk);
 zer: dregister_1 port map (zin, zout, zen, rst, clk);
 iter: dregister_1 port map (iter_in, iter_out, iter_en, rst, clk);
-branch_comp: comparator port map (t1_out_pb, t2_out_pb, branch_eq);
+branch_comp: comparator port map (comp_1in, comp_2in, branch_eq);
 sm_pe: pr_encoder port map (ir_out_pc(7 downto 0), sm_index, sm_fin);
 lm_pe: pr_encoder port map (ir_out_pd(7 downto 0), lm_index, lm_fin);
 
@@ -165,7 +167,7 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		p0_en, ir_out_p0, npc_out_p0, contr_p0_out, t1_out_p0, t2_out_p0, t3_out_p0, memd_out_p0, c_in_p0, z_in_p0, c_out_p0, z_out_p0, ir_in_pa, npc_in_pa, t1_in_pa, t2_in_pa, t3_in_pa, memd_in_pa, contr_in_pa, rst,
 		pa_en, ir_out_pa, npc_out_pa, contr_pa_out, t1_out_pa, t2_out_pa, t3_out_pa, memd_out_pa, c_in_pa, z_in_pa, c_out_pa, z_out_pa, ir_in_pb, npc_in_pb, t1_in_pb, t2_in_pb, t3_in_pb, memd_in_pb, contr_in_pb, rst,
 		pb_en, ir_out_pb, npc_out_pb, contr_pb_out, t1_out_pb, t2_out_pb, t3_out_pb, memd_out_pb, c_in_pb, z_in_pb, c_out_pb, z_out_pb, ir_in_pc, npc_in_pc, t1_in_pc, t2_in_pc, t3_in_pc, memd_in_pc, contr_in_pc, rst,
-		pc_en, ir_out_pc, npc_out_pc, contr_pc_out, t1_out_pc, t2_out_pc, t3_out_pc, memd_out_pc, c_in_pc, z_in_pc, c_out_pc, z_out_pc, pc_in, pc_out)
+		pc_en, ir_out_pc, npc_out_pc, contr_pc_out, t1_out_pc, t2_out_pc, t3_out_pc, memd_out_pc, c_in_pc, z_in_pc, c_out_pc, z_out_pc, pc_in, pc_out, ir_out_pc_80, comp_1in, comp_2in)
 	
 begin
    if (rst = '1') then
@@ -205,12 +207,8 @@ begin
 			prc_in <= malu_out;
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1') then 
-
-			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
-				prc_in <= malu_out;
-
-			end if;
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) thens
+			prc_in <= malu_out;
 
 		-- JLR : flush
 		elsif (op_a = "1001") then
@@ -225,10 +223,32 @@ begin
 			prc_in <= palu_out;
 		end if;
 
+		-- BEQ LW forwarding
+		if ((op_b = "1100" and op_c = "0100") and (ir_out_pb(11 downto 9) = ir_out_pc(11 downto 9))) then
+			comp_1in <= memd_out;
+			comp_2in <= t2_out_pb;
+		elsif ((op_b = "1100" and op_c = "0100") and (ir_out_pb(8 downto 6) = ir_out_pc(11 downto 9))) then
+			comp_1in <= t1_out_pb;
+			comp_2in <= memd_out;
+		elsif ((op_b = "1100" and op_d = "0100") and (ir_out_pb(11 downto 9) = ir_out_pc(11 downto 9))) then
+			comp_1in <= memd_out_pd;
+			comp_2in <= t2_out_pb;
+		elsif ((op_b = "1100" and op_d = "0100") and (ir_out_pb(8 downto 6) = ir_out_pc(11 downto 9))) then
+			comp_1in <= t1_out_pb;
+			comp_2in <= memd_out;
+		else
+			comp_1in <= t1_out_pb;
+			comp_2in <= memd_out_pd;
+		end if;
+
+
 
 		--R7 signals
 		pc_in <= npc_out_pd;
-		if(ir_out_pd = "1111111111111111")
+
+		if (op_d = "0110" and lm_fin = '0') then
+			r7_en <= '0';
+		elsif(ir_out_pd = "1111111111111111") then
 			r7_en <= '0';
 		else
 			r7_en <= '1';
@@ -510,20 +530,17 @@ begin
 			memd_in_p0 <= (others => '0');
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1') then 
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then	
+			ir_in_p0 <= (others => '1');
+			contr_in_p0 <= (others => '0');
 
-			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
-				ir_in_p0 <= (others => '1');
-				contr_in_p0 <= (others => '0');
-
-				c_in_p0 <= '0';
-				z_in_p0 <= '0';
-				npc_in_p0 <= (others => '0');
-				t1_in_p0 <= (others => '0');
-				t2_in_p0 <= (others => '0');
-				t3_in_p0 <= (others => '0');
-				memd_in_p0 <= (others => '0');
-			end if;
+			c_in_p0 <= '0';
+			z_in_p0 <= '0';
+			npc_in_p0 <= (others => '0');
+			t1_in_p0 <= (others => '0');
+			t2_in_p0 <= (others => '0');
+			t3_in_p0 <= (others => '0');
+			memd_in_p0 <= (others => '0');
 
 		-- JLR : flush
 		elsif (op_a = "1001") then
@@ -598,10 +615,7 @@ begin
 			memd_in_pa <= (others => '0');
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1') then 
-
-			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
-				ir_in_pa <= (others => '1');
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then
 				contr_in_pa <= (others => '0');
 
 				c_in_pa <= '0';
@@ -612,7 +626,6 @@ begin
 				t3_in_pa <= (others => '0');
 				memd_in_pa <= (others => '0');
 
-			end if;
 				
 		-- SM : Stall and flush
 		
@@ -646,9 +659,9 @@ begin
 
 			for i in 0 to 7 loop
 				if(to_integer(unsigned(sm_index)) = i) then
-					ir_in_pa(7 - i) <= '0';
+					ir_in_pa(i) <= '0';
 				else
-					ir_in_pa(7 - i) <= ir_out_pc(7 - i);
+					ir_in_pa(i) <= ir_out_pc(i);
 				end if;
 			end loop;
 			--ir_in_pa <= ir_out_pc;
@@ -733,9 +746,7 @@ begin
 			memd_in_pb <= (others => '0');
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1') then 
-
-			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then 
 				ir_in_pb <= (others => '1');
 				contr_in_pb <= (others => '0');
 
@@ -747,8 +758,6 @@ begin
 				t3_in_pb <= (others => '0');
 				memd_in_pb <= (others => '0');
 
-			end if;
-		
 		-- JLR LW : stall and flush
 		elsif ((op_a = "1001") and (op_b = "0100") and (ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9))) then
 			ir_in_pb <= (others => '1');
@@ -786,9 +795,9 @@ begin
 			
 			for i in 0 to 7 loop
 				if(to_integer(unsigned(lm_index)) = i) then
-					ir_in_pb(7 - i) <= '0';
+					ir_in_pb(i) <= '0';
 				else
-					ir_in_pb(7 - i) <= ir_out_pd(7 - i);
+					ir_in_pb(i) <= ir_out_pd(i);
 				end if;
 			end loop;
 
@@ -807,6 +816,159 @@ begin
 		--	pb_en <= '1';			
 		
 		-- JLR : flush !*
+		elsif (op_a = "1001" and ((op_b = "0000") or (op_b = "0010")) and (ir_out_pa(8 downto 6) = ir_out_pb(5 downto 3))) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
+			ir_in_pb <= ir_out_pa;
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= malu_out; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+		
+		elsif ( op_a = "1001" and (op_b = "0001") and ( ir_out_pa(8 downto 6) = ir_out_pb(8 downto 6) ) ) then -- ADI
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= malu_out; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;			
+
+		--Not needed due to Priority
+		elsif ( op_a = "1001" and (op_b = "1000" or op_b = "1001") and ( ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9) ) ) then -- JAL JLR
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pb; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+		elsif ( op_a = "1001" and (op_b = "0011") and ( ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9) ) ) then -- LHI
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= ir_out_pb_80; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;			
+
+
+		elsif (op_a = "1001" and ((op_c = "0000") or (op_c = "0010")) and (ir_out_pa(8 downto 6) = ir_out_pc(5 downto 3))) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
+			ir_in_pb <= ir_out_pa;
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= t3_out_pc; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+		
+		elsif ( op_a = "1001" and (op_c = "0001") and ( ir_out_pa(8 downto 6) = ir_out_pc(8 downto 6) ) ) then -- ADI
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= t3_out_pc; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;			
+
+		elsif ( op_a = "1001" and (op_c = "1000" or op_c = "1001") and ( ir_out_pa(8 downto 6) = ir_out_pc(11 downto 9) ) ) then -- JAL JLR
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pc; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+		elsif ( op_a = "1001" and (op_c = "0011") and ( ir_out_pa(8 downto 6) = ir_out_pc(11 downto 9) ) ) then -- LHI
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= ir_out_pc_80; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+		elsif (op_a = "1001" and ((op_d = "0000") or (op_d = "0010")) and (ir_out_pa(8 downto 6) = ir_out_pd(5 downto 3))) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
+			ir_in_pb <= ir_out_pa;
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= t3_out_pd; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+		
+		elsif ( op_a = "1001" and (op_d = "0001") and ( ir_out_pa(8 downto 6) = ir_out_pd(8 downto 6) ) ) then -- ADI
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= t3_out_pd; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;			
+
+		elsif ( op_a = "1001" and (op_d = "1000" or op_d = "1001") and ( ir_out_pa(8 downto 6) = ir_out_pd(11 downto 9) ) ) then -- JAL JLR
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pd; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+		elsif ( op_a = "1001" and (op_c = "0011") and ( ir_out_pa(8 downto 6) = ir_out_pc(11 downto 9) ) ) then -- LHI
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= ir_out_pd_80; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+
 		elsif (op_a = "1001") then
 			t1_in_pb <= rf_D1;
 			t2_in_pb <= rf_D2;
@@ -817,7 +979,8 @@ begin
 			memd_in_pb <= memd_out_pa;
 			contr_in_pb <= contr_pa_out;
 			c_in_pb <= c_out_pa;
-			z_in_pb <= z_out_pa;
+			z_in_pb <= z_out_pa;			
+
 
 
 		-- Forwarding from Pd to Pa
@@ -882,7 +1045,7 @@ begin
 				end if ;					
 			end if;
 
-		--Src = Lw, SW
+		--Src = LW, SW
 		elsif (((op_a = "0101") or (op_a = "0100")) and ((op_d = "0000") or (op_d = "0010")) and ( ir_out_pd(5 downto 3) = ir_out_pa(8 downto 6) ) ) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
 			ir_in_pb <= ir_out_pa;
 			npc_in_pb <= npc_out_pa;
@@ -1047,9 +1210,8 @@ begin
 			z_in_pc <= z_out_pb;
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1') then 
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then 
 
-			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
 				t3_in_pc <= npc_out_pb; -- Old PC to WB into Reg A
 				ir_in_pc <= ir_out_pb;
 				npc_in_pc <= malu_out; -- New PC for R7
@@ -1059,11 +1221,6 @@ begin
 				contr_in_pc <= contr_pb_out;
 				c_in_pc <= c_out_pb;
 				z_in_pc <= z_out_pb;
-
-			--else
-			--	p0_en <= '0';
-
-			end if;
 
 		---- LM : Stall and flush
 		--elsif ((op_b = "0110") or (op_c = "0110") or ((op_d = "0110") and (lm_fin = '0'))) then 
@@ -1178,16 +1335,9 @@ begin
 			pb_en <= '1';
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1') then 
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then
+			pb_en <= '1';
 
-			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
-				pb_en <= '1';
-
-			--else
-			--	p0_en <= '0';
-
-			end if;
-		
 		-- JLR LW : stall and flush
 		elsif ((op_a = "1001") and (op_b = "0100") and (ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9))) then
 			pb_en <= '1';
@@ -1233,15 +1383,8 @@ begin
 			pa_en <= '1';
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1') then 
-
-			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
-				pa_en <= '1';
-
-			--else
-			--	p0_en <= '0';
-
-			end if;
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then
+			pa_en <= '1';
 		
 		-- JLR LW : stall and flush
 		elsif ((op_a = "1001") and (op_b = "0100") and (ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9))) then
@@ -1292,16 +1435,9 @@ begin
 			p0_en <= '1';
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1') then 
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then
+			p0_en <= '1';
 
-			if ( (ir_out_pb(5 downto 3) = "111" and (ir_out_pb(15 downto 14) = "00") and not ir_out_pb(15 downto 12) = "0011")) or ( (ir_out_pb(15 downto 12) = "0100" or ir_out_pb(15 downto 12) = "0011" or ir_out_pb(15 downto 12) = "0110") and ir_out_pb(11 downto 9) = "111") ) then
-				p0_en <= '1';
-
-			--else
-			--	p0_en <= '0';
-
-			end if;
-		
 		-- JLR LW : stall and flush
 		elsif ((op_a = "1001") and (op_b = "0100") and (ir_out_pa(8 downto 6) = ir_out_pb(11 downto 9))) then
 			p0_en <= '0';

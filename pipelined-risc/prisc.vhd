@@ -231,12 +231,12 @@ begin
 		elsif ((op_b = "1100" and op_c = "0100") and (ir_out_pb(8 downto 6) = ir_out_pc(11 downto 9))) then
 			comp_1in <= t1_out_pb;
 			comp_2in <= datamem_out;
-		elsif ((op_b = "1100" and op_d = "0100") and (ir_out_pb(11 downto 9) = ir_out_pc(11 downto 9))) then
+		elsif ((op_b = "1100" and op_d = "0100") and (ir_out_pb(11 downto 9) = ir_out_pd(11 downto 9))) then
 			comp_1in <= memd_out_pd;
 			comp_2in <= t2_out_pb;
-		elsif ((op_b = "1100" and op_d = "0100") and (ir_out_pb(8 downto 6) = ir_out_pc(11 downto 9))) then
+		elsif ((op_b = "1100" and op_d = "0100") and (ir_out_pb(8 downto 6) = ir_out_pd(11 downto 9))) then
 			comp_1in <= t1_out_pb;
-			comp_2in <= datamem_out;
+			comp_2in <= memd_out_pd;
 		else
 			comp_1in <= t1_out_pb;
 			comp_2in <= t2_out_pb;
@@ -362,7 +362,7 @@ begin
 				alu_1 <= t1_out_pb;
 				alu_2 <= t3_out_pd;					
 			end if;
-		elsif (( (op_b = "0000") or (op_b = "0010") or (op_b = "1100")) and ((op_d = "0011") or (op_d = "1000") or (op_d = "1001") ) and ( ir_out_pd(11 downto 9) = ir_out_pb(11 downto 9) or ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6) ) ) then -- LHI, JAL. JLR
+		elsif (( (op_b = "0000") or (op_b = "0010") or (op_b = "1100")) and ((op_d = "0011") or (op_d = "1000") or (op_d = "1001") ) and ( ir_out_pd(11 downto 9) = ir_out_pb(11 downto 9) or ir_out_pd(11 downto 9) = ir_out_pb(8 downto 6) ) ) then -- LHI, JAL. JLR
 			if ( ir_out_pd(11 downto 9) = ir_out_pb(11 downto 9) ) then
 				if (op_d = "0011") then --LHI
 					alu_1 <= ir_out_pd_80; -- *Check
@@ -380,6 +380,16 @@ begin
 					alu_2 <= npc_out_pd;
 					alu_1 <= t1_out_pb;
 				end if ;					
+			end if;
+
+		elsif ( ( (op_b = "0000") or (op_b = "0010") or (op_b = "1100")) and (op_d = "0100") and (( ir_out_pd(11 downto 9) = ir_out_pb(11 downto 9) or ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6) )) ) then --Arith _ LW
+			if ( ir_out_pd(11 downto 9) = ir_out_pb(11 downto 9) ) then
+				alu_1 <= memd_out_pd;
+				alu_2 <= t2_out_pb;
+				
+			else
+				alu_1 <= t1_out_pb; 
+				alu_2 <= memd_out_pd;
 			end if;
 
 		--Src = Lw, SW

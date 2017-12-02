@@ -99,7 +99,7 @@ signal prc_in : std_logic_vector(15 downto 0) := (others => '0');
 
 signal zeros, prc_out, palu_out, malu_out, codemem_out, ir_out_p0, ir_out_pa, ir_out_pb, ir_out_pc, ir_out_pd, npc_out_p0, npc_out_pb,
 	npc_out_pa, rf_D1, rf_D2, rf_D3, npc_out_pd, memd_out_pd, t3_out_pd, datamem_a, datamem_out, datamem_din , t1_in, t2_out_pb, t2_out_pc, t2_out_pd,
-	t1_out_pb, t3_out_pb, npc_out_pc, t1_out_pc, t1_out_pd, t3_out_pc, alu_1, alu_2, ir_out_pb_50, ir_out_pb_80, ir_out_pd_80, t1_out_p0, t2_out_p0,
+	t1_out_pb, t3_out_pb, npc_out_pc, t1_out_pc, t1_out_pd, t3_out_pc, alu_1, alu_2, ir_out_pb_50, ir_out_p0_80,ir_out_pb_80, ir_out_pd_80, t1_out_p0, t2_out_p0,
 	t3_out_p0, memd_out_p0, ir_in_pa, npc_in_pa, t1_in_pa, t2_in_pa, t3_in_pa, memd_in_pa, t1_out_pa, t2_out_pa, t3_out_pa, memd_out_pa, ir_in_pb,
 	npc_in_pb, t1_in_pb, t2_in_pb, t3_in_pb, memd_in_pb, memd_out_pb, ir_in_pc, npc_in_pc, t1_in_pc, t2_in_pc, t3_in_pc, memd_in_pc, memd_out_pc,
 	ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd, ir_in_p0, npc_in_p0, t1_in_p0, t2_in_p0, t3_in_p0, memd_in_p0, ir_out_pc_80, ir_out_pa_50: std_logic_vector(15 downto 0) := "0000000000000000";
@@ -155,6 +155,7 @@ alu_se10: se10 port map (ir_out_pb(5 downto 0), ir_out_pb_50); -- sign extended 
 alu_se7: se7 port map (ir_out_pb(8 downto 0), '1', ir_out_pb_80);
 pd_se7: se7 port map (ir_out_pd(8 downto 0), '0', ir_out_pd_80);
 pc_se7: se7 port map (ir_out_pc(8 downto 0), '0', ir_out_pc_80);
+p0_se7: se7 port map (ir_out_p0(8 downto 0), '0', ir_out_p0_80);
 pa_se10: se10 port map (ir_out_pa(5 downto 0), ir_out_pa_50);
 car: dregister_1 port map (cin, cout, cen, rst, clk);
 zer: dregister_1 port map (zin, zout, zen, rst, clk);
@@ -168,7 +169,7 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		p0_en, ir_out_p0, npc_out_p0, contr_p0_out, t1_out_p0, t2_out_p0, t3_out_p0, memd_out_p0, c_in_p0, z_in_p0, c_out_p0, z_out_p0, ir_in_pa, npc_in_pa, t1_in_pa, t2_in_pa, t3_in_pa, memd_in_pa, contr_in_pa, rst,
 		pa_en, ir_out_pa, npc_out_pa, contr_pa_out, t1_out_pa, t2_out_pa, t3_out_pa, memd_out_pa, c_in_pa, z_in_pa, c_out_pa, z_out_pa, ir_in_pb, npc_in_pb, t1_in_pb, t2_in_pb, t3_in_pb, memd_in_pb, contr_in_pb, rst,
 		pb_en, ir_out_pb, npc_out_pb, contr_pb_out, t1_out_pb, t2_out_pb, t3_out_pb, memd_out_pb, c_in_pb, z_in_pb, c_out_pb, z_out_pb, ir_in_pc, npc_in_pc, t1_in_pc, t2_in_pc, t3_in_pc, memd_in_pc, contr_in_pc, rst,
-		pc_en, ir_out_pc, npc_out_pc, contr_pc_out, t1_out_pc, t2_out_pc, t3_out_pc, memd_out_pc, c_in_pc, z_in_pc, c_out_pc, z_out_pc, pc_in, pc_out, ir_out_pc_80, comp_1in, comp_2in, ir_out_pa_50, lm_index, sm_index)
+		pc_en, ir_out_pc, npc_out_pc, contr_pc_out, t1_out_pc, t2_out_pc, t3_out_pc, memd_out_pc, c_in_pc, z_in_pc, c_out_pc, z_out_pc, pc_in, pc_out, comp_1in, comp_2in, ir_out_pa_50, lm_index, sm_index, ir_out_p0_80, ir_out_pb_80, ir_out_pc_80)
 	
 begin
    if (rst = '1') then
@@ -215,9 +216,9 @@ begin
 		elsif (op_a = "1001") then
 			prc_in <= rf_D2;
 			
-		-- LHI R7 : flush !* Create a sign extender and drive into prc_in
+		-- LHI R7 : flush !*
 		elsif (op_0 = "0011" and ir_out_p0(11 downto 9) = "111") then
-			prc_in <=  (others => '1');
+			prc_in <= ir_out_p0_80;
 
 		-- Default
 		else
@@ -466,7 +467,26 @@ begin
 		-- MEM signals dep on contr_pc_out
 		--datamem_rd <= contr_pc_out(7);
 		datamem_wr <= contr_pc_out(6);
-		datamem_din <= t1_out_pc;
+		
+		-- SW forwarding	
+		if ( op_c = "0101"  and ((op_d = "0000") or (op_d = "0010")) and ( ir_out_pd(5 downto 3) = ir_out_pc(11 downto 9) ) ) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
+			datamem_din <= t3_out_pd;
+		elsif (op_c = "0101" and op_d = "0001" and ( ir_out_pd(8 downto 6) = ir_out_pc(11 downto 9) ) ) then -- ADI
+			datamem_din <= t3_out_pc;
+		elsif (op_c = "0101" and ((op_d = "0011") or (op_d = "1000") or (op_d = "1001") ) and ( ir_out_pd(11 downto 9) = ir_out_pc(11 downto 9) ) ) then -- LHI, JAL. JLR
+			if (op_d = "0011") then --LHI
+				datamem_din <= ir_out_pd_80;	
+			else --JAL and JLR
+				datamem_din <= npc_out_pd;
+			end if ;
+
+		elsif ( op_c = "0101"  and op_d = "0100" and ( ir_out_pd(11 downto 9) = ir_out_pc(11 downto 9) ) ) then --Arith _ LW
+			datamem_din <= memd_out_pd;
+	
+		else
+			datamem_din <= t1_out_pc;
+		end if;
+
 		if (contr_pc_out(5) = '1') then
 			datamem_a <= t3_out_pc;
 		else
@@ -935,6 +955,18 @@ begin
 			c_in_pb <= c_out_pa;
 			z_in_pb <= z_out_pa;
 
+		elsif (op_a = "1001" and op_c = "0100" and ir_out_pa(8 downto 6) = ir_out_pc(11 downto 9) ) -- LW
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= datamem_out; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;			
+
 		elsif (op_a = "1001" and ((op_d = "0000") or (op_d = "0010")) and (ir_out_pa(8 downto 6) = ir_out_pd(5 downto 3))) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
 			ir_in_pb <= ir_out_pa;
 			t1_in_pb <= rf_D1;
@@ -973,7 +1005,7 @@ begin
 			c_in_pb <= c_out_pa;
 			z_in_pb <= z_out_pa;
 
-		elsif ( op_a = "1001" and (op_c = "0011") and ( ir_out_pa(8 downto 6) = ir_out_pc(11 downto 9) ) ) then -- LHI
+		elsif ( op_a = "1001" and (op_c = "0011") and ( ir_out_pa(8 downto 6) = ir_out_pd(11 downto 9) ) ) then -- LHI
 			t1_in_pb <= rf_D1;
 			t2_in_pb <= rf_D2;
 
@@ -985,6 +1017,17 @@ begin
 			c_in_pb <= c_out_pa;
 			z_in_pb <= z_out_pa;
 
+		elsif (op_a = "1001" and op_c = "0100" and ir_out_pa(8 downto 6) = ir_out_pd(11 downto 9) ) -- LW
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= rf_D2;
+
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= memd_out_pd; -- New PC for R7
+			t3_in_pb <= npc_out_pa; --!*
+			memd_in_pb <= npc_out_pa; -- Old PC for WB in reg A
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;	
 
 		elsif (op_a = "1001") then
 			t1_in_pb <= rf_D1;
@@ -1189,6 +1232,111 @@ begin
 			t2_in_pb(0) <= iter_out;
 			t2_in_pb(15 downto 1) <= (others => '0');
 
+
+		-- SW forwarding		
+
+		elsif ( op_a = "0101"  and ((op_c = "0000") or (op_c = "0010")) and ( ir_out_pc(5 downto 3) = ir_out_pa(11 downto 9) ) ) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pa;
+			t3_in_pb <= t3_out_pa;
+			memd_in_pb <= memd_out_pa;
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= t3_out_pd;
+		elsif (op_a = "0101" and op_d = "0001" and ( ir_out_pc(8 downto 6) = ir_out_pa(11 downto 9) ) ) then -- ADI
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pa;
+			t3_in_pb <= t3_out_pa;
+			memd_in_pb <= memd_out_pa;
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= t3_out_pc;
+		elsif (op_a = "0101" and ((op_c = "0011") or (op_c = "1000") or (op_c = "1001") ) and ( ir_out_pc(11 downto 9) = ir_out_pa(11 downto 9) ) ) then -- LHI, JAL. JLR
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pa;
+			t3_in_pb <= t3_out_pa;
+			memd_in_pb <= memd_out_pa;
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+			if (op_c = "0011") then --LHI
+				t1_in_pb <= rf_D1;
+				t2_in_pb <= ir_out_pc_80;	
+			else --JAL and JLR
+				t1_in_pb <= rf_D1;
+				t2_in_pb <= npc_out_pc;
+			end if ;
+
+		elsif ( op_b = "0101"  and op_c = "0100" and ( ir_out_pc(11 downto 9) = ir_out_pa(11 downto 9) ) ) then --Arith _ LW
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pa;
+			t3_in_pb <= t3_out_pa;
+			memd_in_pb <= memd_out_pa;
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= datamem_out;
+
+		elsif ( op_a = "0101"  and ((op_d = "0000") or (op_d = "0010")) and ( ir_out_pd(5 downto 3) = ir_out_pa(11 downto 9) ) ) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pa;
+			t3_in_pb <= t3_out_pa;
+			memd_in_pb <= memd_out_pa;
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= t3_out_pd;
+		elsif (op_a = "0101" and op_d = "0001" and ( ir_out_pd(8 downto 6) = ir_out_pa(11 downto 9) ) ) then -- ADI
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pa;
+			t3_in_pb <= t3_out_pa;
+			memd_in_pb <= memd_out_pa;
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= t3_out_pd;
+		elsif (op_a = "0101" and ((op_d = "0011") or (op_d = "1000") or (op_d = "1001") ) and ( ir_out_pd(11 downto 9) = ir_out_pa(11 downto 9) ) ) then -- LHI, JAL. JLR
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pa;
+			t3_in_pb <= t3_out_pa;
+			memd_in_pb <= memd_out_pa;
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+			if (op_d = "0011") then --LHI
+				t1_in_pb <= rf_D1;
+				t2_in_pb <= ir_out_pd_80;	
+			else --JAL and JLR
+				t1_in_pb <= rf_D1;
+				t2_in_pb <= npc_out_pd;
+			end if ;
+
+		elsif ( op_b = "0101"  and op_d = "0100" and ( ir_out_pd(11 downto 9) = ir_out_pa(11 downto 9) ) ) then --Arith _ LW
+			ir_in_pb <= ir_out_pa;
+			npc_in_pb <= npc_out_pa;
+			t3_in_pb <= t3_out_pa;
+			memd_in_pb <= memd_out_pa;
+			contr_in_pb <= contr_pa_out;
+			c_in_pb <= c_out_pa;
+			z_in_pb <= z_out_pa;
+
+			t1_in_pb <= rf_D1;
+			t2_in_pb <= memd_out_pd;
+
 		-- Default
 		else 
 			-- pb_in <= pa_out
@@ -1302,8 +1450,7 @@ begin
 			contr_in_pc <= contr_pb_out;
 			c_in_pc <= c_out_pb;
 			z_in_pc <= z_out_pb;
-		
-		
+				
 		-- Default
 		else
 			-- Directly Mapping from pb

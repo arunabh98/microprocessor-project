@@ -7,7 +7,7 @@ ghdl -a full_adder.vhd
 ghdl -a subtractor.vhd
 ghdl -a 16bit_nand.vhd
 ghdl -a my_alu.vhd
-ghdl -a rf.vhd
+ghdl -a rf_comp.vhdl
 ghdl -a se7.vhd
 ghdl -a se10.vhd
 ghdl -a memory.vhd

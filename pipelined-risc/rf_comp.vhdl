@@ -36,14 +36,14 @@ begin
 	   				registers(to_integer(unsigned(A3))) <= D3;
 	   			end if;
 	   			if (pc_wr = '1') then
-	   				registers(7) <= D_pc;
+	   				registers(7) <= D_pc_in;
 	   			end if;
 	   		end if;
 	   	end if;
 	end if;
 end process;
 
-process (clk, A1, A2, D_pc, pc_wr)
+process (clk, A1, A2, D_pc_in, pc_wr)
 begin
 	D1 <= registers(to_integer(unsigned(A1)));
 	D2 <= registers(to_integer(unsigned(A2)));

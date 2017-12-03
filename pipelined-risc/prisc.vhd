@@ -209,7 +209,7 @@ begin
 			prc_in <= malu_out;
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not (ir_out_pb(15 downto 12) = "0011") ) ) ) then
 			prc_in <= malu_out;
 
 		-- JLR : flush
@@ -271,6 +271,8 @@ begin
 		end if;
 
 		-- ALU signals
+
+
 		
 		-- Forwarding from Pc to Pb
 		--Src = Arith, BEQ
@@ -460,7 +462,7 @@ begin
 		end if;
 
 
-		alu_op1 <= not contr_pb_out(11); -- Op Code logic
+		alu_op1 <= not (contr_pb_out(11)) ; -- Op Code logic
 		cen <= contr_pb_out(9);
 		zen <= contr_pb_out(8);
 
@@ -482,7 +484,10 @@ begin
 
 		elsif ( op_c = "0101"  and op_d = "0100" and ( ir_out_pd(11 downto 9) = ir_out_pc(11 downto 9) ) ) then --Arith _ LW
 			datamem_din <= memd_out_pd;
-	
+		
+		elsif (op_c = "0101" and op_d = "0100" and ( ir_out_pd(11 downto 9) = ir_out_pc(11 downto 9) ) ) then -- SW LW
+			datamem_din <= memd_out_pd;	
+		
 		else
 			datamem_din <= t1_out_pc;
 		end if;
@@ -567,7 +572,7 @@ begin
 			memd_in_p0 <= (others => '0');
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then	
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not (ir_out_pb(15 downto 12) = "0011") ) ) ) then	
 			ir_in_p0 <= (others => '1');
 			contr_in_p0 <= (others => '0');
 
@@ -652,7 +657,7 @@ begin
 			memd_in_pa <= (others => '0');
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not (ir_out_pb(15 downto 12) = "0011") ) ) ) then
 				contr_in_pa <= (others => '0');
 
 				c_in_pa <= '0';
@@ -783,7 +788,7 @@ begin
 			memd_in_pb <= (others => '0');
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then 
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not (ir_out_pb(15 downto 12) = "0011") ) ) ) then 
 				ir_in_pb <= (others => '1');
 				contr_in_pb <= (others => '0');
 
@@ -1419,7 +1424,7 @@ begin
 			z_in_pc <= z_out_pb;
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then 
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not (ir_out_pb(15 downto 12) = "0011") ) ) ) then 
 
 				t3_in_pc <= npc_out_pb; -- Old PC to WB into Reg A
 				ir_in_pc <= ir_out_pb;
@@ -1543,7 +1548,7 @@ begin
 			pb_en <= '1';
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not (ir_out_pb(15 downto 12) = "0011") ) ) ) then
 			pb_en <= '1';
 
 		-- JLR LW : stall and flush
@@ -1591,7 +1596,7 @@ begin
 			pa_en <= '1';
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not (ir_out_pb(15 downto 12) = "0011" ) ) ) then
 			pa_en <= '1';
 		
 		-- JLR LW : stall and flush
@@ -1643,7 +1648,7 @@ begin
 			p0_en <= '1';
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ir_out_pb(15 downto 12) = "0011" ) ) ) then
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not ( ir_out_pb(15 downto 12) = "0011" ) ) ) ) then
 			p0_en <= '1';
 
 		-- JLR LW : stall and flush

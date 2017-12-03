@@ -20,8 +20,14 @@ architecture memory_behave of code_memory is
 		
 		if (init = '1') then
 			-- Initialise some memory
-            mem_reg(0) <= "0110000001010101"; -- LM from R0
-				for i in 1 to 14 loop
+            mem_reg(0) <= "0001011001000011"; -- ADI 3 in R1
+			mem_reg(1) <= "0100000010000001"; -- LW Mem1 in R0
+			mem_reg(2) <= "0100000010000000"; -- LW Mem0 in R0 - 3
+			mem_reg(3) <= "1100000001000001"; -- BEQ R0 R1
+			mem_reg(4) <= "1001100111000000"; -- JLR R4 R7
+			mem_reg(5) <= "0011111000000001"; -- LHI R7
+			
+			for i in 6 to 14 loop
 				mem_reg(i) <= "1111111111111110"; -- The End
 			end loop;
 		elsif (rd = '1') then

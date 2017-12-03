@@ -189,7 +189,7 @@ begin
 			mem_wr <= '0';
 
 
-	    else  			
+	    elsif (X = "1001") then  			
 	    				-- JLR
 	    	A1 <= '0';
 			A2 <= '0';
@@ -207,6 +207,25 @@ begin
 			mem_a <= '0';
 			mem_wr <= '0';
 	    	
+	    else
+	    	-- Hopefully just flush "1111"
+	    		    				-- JLR
+	    	A1 <= '0';
+			A2 <= '0';
+			A3 <=  "00";
+			D3 <= "00";
+			rf_r <= '0';
+			rf_wr <= '0';
+			alua_opc <= '0';
+			alua_en <= '0';
+			alua_cen <= '0';
+			alua_zen <= '0';
+			alu_in1 <= "00";
+			alu_in2 <= "00";
+			mem_r <= '0';
+			mem_a <= '0';
+			mem_wr <= '0';
+
 	    end if;
 			
 	end process;						

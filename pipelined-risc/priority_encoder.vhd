@@ -34,14 +34,14 @@ begin
 		x_out <= "110";
 	elsif(x_in(7) = '1') then
 		x_out <= "111";
+	else
+		x_out <= "000";
 	end if; 
 
 	if (x_in = "00000000") then
 		x_none <= '1';
-		x_out <= "000";
-	else 
+	else
 		x_none <= '0';
-		x_out <= "000";
 	end if;
 
 end process;

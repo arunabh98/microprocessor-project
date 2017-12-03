@@ -1456,20 +1456,16 @@ begin
 				t2_in_pc <= (others => '0');
 				t3_in_pc <= (others => '0');
 				memd_in_pc <= (others => '0');
-			elsif (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
-				if(not ((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9)) ) then
-					if(not ((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
-						ir_in_pc <= (others => '1');
-						contr_in_pc <= (others => '0');
-						c_in_pc <= '0';
-						z_in_pc <= '0';
-						npc_in_pc <= (others => '0');
-						t1_in_pc <= (others => '0');
-						t2_in_pc <= (others => '0');
-						t3_in_pc <= (others => '0');
-						memd_in_pc <= (others => '0');
-					end if;
-				end if;			
+			elsif ( ( ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)) ) and (not ( ((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9)) )) and (not ( ((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)) ))  ) then
+					ir_in_pc <= (others => '1');
+					contr_in_pc <= (others => '0');
+					c_in_pc <= '0';
+					z_in_pc <= '0';
+					npc_in_pc <= (others => '0');
+					t1_in_pc <= (others => '0');
+					t2_in_pc <= (others => '0');
+					t3_in_pc <= (others => '0');
+					memd_in_pc <= (others => '0');
 			--else
 			--	-- Register match failed; No LM-SM either, and hence clear.
 			--	p0_en <= '1';
@@ -1602,12 +1598,9 @@ begin
 				pb_en <= '0';
 			elsif (((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then -- SW/LW - LW
 				pb_en <= '0';
-			elsif (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
-				if(not ((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9)) ) then
-					if(not ((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
-						pb_en <= '0';
-					end if;
-				end if;		
+			elsif ( ( ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)) ) and (not ( ((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9)) )) and (not ( ((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)) ))  ) then
+				pb_en <= '0';
+	
 			--else
 			--	-- Register match failed; No LM-SM either, and hence clear.
 			--	p0_en <= '1';
@@ -1655,12 +1648,9 @@ begin
 				pa_en <= '0';
 			elsif (((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then -- SW/LW - LW
 				pa_en <= '0';
-			elsif (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
-				if(not ((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9)) ) then
-					if(not ((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
-						pa_en <= '0';
-					end if;
-				end if;		
+			elsif ( ( ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)) ) and (not ( ((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9)) )) and (not ( ((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)) ))  ) then
+				pa_en <= '0';
+
 			--else
 			--	-- Register match failed; No LM-SM either, and hence clear.
 			--	p0_en <= '1';
@@ -1713,12 +1703,9 @@ begin
 				p0_en <= '0';
 			elsif (((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then -- SW/LW - LW
 				p0_en <= '0';
-			elsif (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
-				if(not ((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9)) ) then
-					if(not ((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6))) then
-						p0_en <= '0';
-					end if;
-				end if;		
+			elsif ( ( ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9) or (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)) ) and (not ( ((op_b = "0001") or (op_b = "0110")) and (ir_out_pc(11 downto 9) = ir_out_pb(11 downto 9)) )) and (not ( ((op_b = "0100") or (op_b = "0101")) and (ir_out_pc(11 downto 9) = ir_out_pb(8 downto 6)) ))  ) then
+				p0_en <= '0';
+	
 			--else
 			--	-- Register match failed; No LM-SM either, and hence clear.
 			--	p0_en <= '1';

@@ -1596,7 +1596,7 @@ begin
 			pa_en <= '1';
 
 		-- Arith R7 : flush
-		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not (ir_out_pb(15 downto 12) = "0011" ) ) ) then
+		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not (ir_out_pb(15 downto 12) = "0011" ) ) ) ) then
 			pa_en <= '1';
 		
 		-- JLR LW : stall and flush

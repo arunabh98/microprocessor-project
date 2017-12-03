@@ -102,7 +102,7 @@ signal zeros, prc_out, palu_out, malu_out, codemem_out, ir_out_p0, ir_out_pa, ir
 	t1_out_pb, t3_out_pb, npc_out_pc, t1_out_pc, t1_out_pd, t3_out_pc, alu_1, alu_2, ir_out_pb_50, ir_out_p0_80,ir_out_pb_80, ir_out_pd_80, t1_out_p0, t2_out_p0,
 	t3_out_p0, memd_out_p0, ir_in_pa, npc_in_pa, t1_in_pa, t2_in_pa, t3_in_pa, memd_in_pa, t1_out_pa, t2_out_pa, t3_out_pa, memd_out_pa, ir_in_pb,
 	npc_in_pb, t1_in_pb, t2_in_pb, t3_in_pb, memd_in_pb, memd_out_pb, ir_in_pc, npc_in_pc, t1_in_pc, t2_in_pc, t3_in_pc, memd_in_pc, memd_out_pc,
-	ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd, ir_in_p0, npc_in_p0, t1_in_p0, t2_in_p0, t3_in_p0, memd_in_p0, ir_out_pc_80, ir_out_pa_50: std_logic_vector(15 downto 0) := "0000000000000000";
+	ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd, ir_in_p0, npc_in_p0, t1_in_p0, t2_in_p0, t3_in_p0, memd_in_p0, ir_out_pc_80, ir_out_pa_50, psw_cin, psw_zin, psw_cout, psw_zout: std_logic_vector(15 downto 0) := "0000000000000000";
 signal one : std_logic_vector(15 downto 0) := (0 => '1', others => '0');
 signal pc_en, prc_en, codemem_init, p0_en, pa_en, pb_en, pd_en, rf_wr, rf_rst, cen, zen, datamem_init, datamem_rd, z_out_p0, c_out_p0, z_out_pa, c_out_pa,
 	z_in_pa, c_in_pa, z_out_pb, c_out_pb, z_in_pb, c_in_pb, z_out_pc, c_out_pc, z_in_pc, c_in_pc, z_out_pd, c_out_pd, z_in_pd, c_in_pd, datamem_wr, zin,
@@ -111,7 +111,7 @@ signal decoded_contr, contr_in_pa, contr_in_pb, contr_in_pc, contr_in_pd, contr_
 signal pe_out,rf_A1,rf_A2,rf_A3, lm_index, sm_index : std_logic_vector(2 downto 0) := "000";
 signal op_0, op_a, op_b, op_c, op_d : std_logic_vector (3 downto 0) := "0000";
 signal pc_in, pc_out : std_logic_vector(15 downto 0) := "0000000000000000"; --R7 PC
-signal r7_en : std_logic := '0'; -- R7_en
+signal r7_en, psw_cen, psw_zen : std_logic := '0';
 signal comp_1in, comp_2in : std_logic_vector(15 downto 0) := "0000000000000000"; -- comparator inputs
 
 begin
@@ -159,6 +159,8 @@ p0_se7: se7 port map (ir_out_p0(8 downto 0), '0', ir_out_p0_80);
 pa_se10: se10 port map (ir_out_pa(5 downto 0), ir_out_pa_50);
 car: dregister_1 port map (cin, cout, cen, rst, clk);
 zer: dregister_1 port map (zin, zout, zen, rst, clk);
+cpsw: dregister_1 port map (psw_cin, psw_cout, psw_cen, rst, clk);
+zpsw: dregister_1 port map (psw_zin, psw_zout, psw_zen, rst, clk);
 iter: dregister_1 port map (iter_in, iter_out, iter_en, rst, clk);
 branch_comp: comparator port map (comp_1in, comp_2in, branch_eq);
 sm_pe: pr_encoder port map (ir_out_pc(7 downto 0), sm_index, sm_fin);
@@ -169,7 +171,8 @@ process(clk, rst, ir_in_pd, npc_in_pd, t1_in_pd, t2_in_pd, t3_in_pd, memd_in_pd,
 		p0_en, ir_out_p0, npc_out_p0, contr_p0_out, t1_out_p0, t2_out_p0, t3_out_p0, memd_out_p0, c_in_p0, z_in_p0, c_out_p0, z_out_p0, ir_in_pa, npc_in_pa, t1_in_pa, t2_in_pa, t3_in_pa, memd_in_pa, contr_in_pa, rst,
 		pa_en, ir_out_pa, npc_out_pa, contr_pa_out, t1_out_pa, t2_out_pa, t3_out_pa, memd_out_pa, c_in_pa, z_in_pa, c_out_pa, z_out_pa, ir_in_pb, npc_in_pb, t1_in_pb, t2_in_pb, t3_in_pb, memd_in_pb, contr_in_pb, rst,
 		pb_en, ir_out_pb, npc_out_pb, contr_pb_out, t1_out_pb, t2_out_pb, t3_out_pb, memd_out_pb, c_in_pb, z_in_pb, c_out_pb, z_out_pb, ir_in_pc, npc_in_pc, t1_in_pc, t2_in_pc, t3_in_pc, memd_in_pc, contr_in_pc, rst,
-		pc_en, ir_out_pc, npc_out_pc, contr_pc_out, t1_out_pc, t2_out_pc, t3_out_pc, memd_out_pc, c_in_pc, z_in_pc, c_out_pc, z_out_pc, pc_in, pc_out, comp_1in, comp_2in, ir_out_pa_50, lm_index, sm_index, ir_out_p0_80, ir_out_pb_80, ir_out_pc_80)
+		pc_en, ir_out_pc, npc_out_pc, contr_pc_out, t1_out_pc, t2_out_pc, t3_out_pc, memd_out_pc, c_in_pc, z_in_pc, c_out_pc, z_out_pc, pc_in, pc_out, comp_1in, comp_2in, ir_out_pa_50, lm_index, sm_index, ir_out_p0_80, 
+		ir_out_pb_80, ir_out_pc_80, psw_cin, psw_zin, psw_cout, psw_zout, psw_cen, psw_zen)
 	
 begin
    if (rst = '1') then
@@ -262,6 +265,11 @@ begin
 			r7_en <= '1';
 		end if;
 
+		psw_zen <= r7_en;
+		psw_cen <= r7_en;
+
+		psw_zin <= z_out_pd;
+		psw_cin <= c_out_pd;
 
 		if (contr_pa_out(18) = '1') then
 			rf_A1 <= sm_index;
@@ -273,7 +281,7 @@ begin
 		if (contr_pa_out(17) = '0') then
 			rf_A2 <= ir_out_pa(8 downto 6);
 		else
-			rf_A2 <= pe_out;
+			rf_A2 <= sm_index;
 		end if;
 
 		-- ALU signals
@@ -512,7 +520,7 @@ begin
 		elsif (contr_pd_out(4 downto 3) = "10") then
 			rf_A3 <= ir_out_pd(11 downto 9);
 		else -- Including 
-			rf_A3 <= pe_out;
+			rf_A3 <= lm_index;
 		end if;
 		
 		-- Decoding rf_wr
@@ -1459,21 +1467,21 @@ begin
 			t2_in_pc <= t2_out_pb;
 			memd_in_pc <= memd_out_pb;
 			contr_in_pc <= contr_pb_out;
-			c_in_pc <= c_out_pb;
-			z_in_pc <= z_out_pb;
+			c_in_pc <= cout;
+			z_in_pc <= zout;
 
 		-- Arith R7 : flush
 		elsif (contr_pb_out(0) = '1' and ( ir_out_pb(5 downto 3) = "111" and ( ir_out_pb(15 downto 14) = "00" and not (ir_out_pb(15 downto 12) = "0011") ) ) ) then 
 
-				t3_in_pc <= npc_out_pb; -- Old PC to WB into Reg A
-				ir_in_pc <= ir_out_pb;
-				npc_in_pc <= malu_out; -- New PC for R7
-				t1_in_pc <= t1_out_pb;
-				t2_in_pc <= t2_out_pb;
-				memd_in_pc <= memd_out_pb;
-				contr_in_pc <= contr_pb_out;
-				c_in_pc <= c_out_pb;
-				z_in_pc <= z_out_pb;
+			t3_in_pc <= npc_out_pb; -- Old PC to WB into Reg A
+			ir_in_pc <= ir_out_pb;
+			npc_in_pc <= malu_out; -- New PC for R7
+			t1_in_pc <= t1_out_pb;
+			t2_in_pc <= t2_out_pb;
+			memd_in_pc <= memd_out_pb;
+			contr_in_pc <= contr_pb_out;
+			c_in_pc <= cout;
+			z_in_pc <= zout;
 
 		---- LM : Stall and flush
 		--elsif ((op_b = "0110") or (op_c = "0110") or ((op_d = "0110") and (lm_fin = '0'))) then 
@@ -1492,8 +1500,8 @@ begin
 			t2_in_pc <= t2_out_pb;
 			memd_in_pc <= memd_out_pb;
 			contr_in_pc <= contr_pb_out;
-			c_in_pc <= c_out_pb;
-			z_in_pc <= z_out_pb;
+			c_in_pc <= cout;
+			z_in_pc <= zout;
 				
 		-- Default
 		else
@@ -1505,8 +1513,8 @@ begin
 			t2_in_pc <= t2_out_pb;
 			memd_in_pc <= memd_out_pb;
 			contr_in_pc <= contr_pb_out;
-			c_in_pc <= c_out_pb;
-			z_in_pc <= z_out_pb;		
+			c_in_pc <= cout;
+			z_in_pc <= zout;		
 		end if;
 
 		

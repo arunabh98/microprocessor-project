@@ -199,9 +199,11 @@ begin
 		-- Input to dummy PC
 
 		-- LM R7 : flush
+		if(op_d = "0110" and lm_fin = '1' and lm_index = "111") then
+			prc_in <= memd_out_pd;
 
 		-- LW R7 : flush
-		if (op_c = "0100" and ir_out_pc(11 downto 9) = "111") then
+		elsif (op_c = "0100" and ir_out_pc(11 downto 9) = "111") then
 			prc_in <= datamem_out;
 
 		-- BEQ, JAL : flush
@@ -246,7 +248,11 @@ begin
 
 
 		--R7 signals
-		pc_in <= npc_out_pd;
+		if(op_d = "0110" and lm_fin = '1' and lm_index = "111") then
+			pc_in <= memd_out_pd;
+		else
+			pc_in <= npc_out_pd;
+		end if;
 
 		if (op_d = "0110" and lm_fin = '0') then
 			r7_en <= '0';
@@ -544,6 +550,17 @@ begin
 		-- Mapping of Pipe 0
 
 		-- LM R7 : flush
+		if(op_d = "0110" and lm_fin = '1' and lm_index = "111") then
+			ir_in_p0 <= (others => '1');
+			contr_in_p0 <= (others => '0');
+
+			c_in_p0 <= '0';
+			z_in_p0 <= '0';
+			npc_in_p0 <= (others => '0');
+			t1_in_p0 <= (others => '0');
+			t2_in_p0 <= (others => '0');
+			t3_in_p0 <= (others => '0');
+			memd_in_p0 <= (others => '0');
 
 		-- LW R7 : flush
 		if (op_c = "0100" and ir_out_pc(11 downto 9) = "111") then
@@ -629,6 +646,17 @@ begin
 		-- Mapping of Pipe A
 
 		-- LM R7 : flush
+		if(op_d = "0110" and lm_fin = '1' and lm_index = "111") then
+			ir_in_pa <= (others => '1');
+			contr_in_pa <= (others => '0');
+
+			c_in_pa <= '0';
+			z_in_pa <= '0';
+			npc_in_pa <= (others => '0');
+			t1_in_pa <= (others => '0');
+			t2_in_pa <= (others => '0');
+			t3_in_pa <= (others => '0');
+			memd_in_pa <= (others => '0');		
 
 		-- LW R7 : flush
 		if (op_c = "0100" and ir_out_pc(11 downto 9) = "111") then
@@ -760,6 +788,17 @@ begin
 		-- Mapping of Pipe B
 
 		-- LM R7 : flush
+		if(op_d = "0110" and lm_fin = '1' and lm_index = "111") then
+			ir_in_pb <= (others => '1');
+			contr_in_pb <= (others => '0');
+
+			c_in_pb <= '0';
+			z_in_pb <= '0';
+			npc_in_pb <= (others => '0');
+			t1_in_pb <= (others => '0');
+			t2_in_pb <= (others => '0');
+			t3_in_pb <= (others => '0');
+			memd_in_pb <= (others => '0');			
 
 		-- LW R7 : flush
 		if (op_c = "0100" and ir_out_pc(11 downto 9) = "111") then
@@ -1524,9 +1563,11 @@ begin
 		-- Pipe B enable
 
 		-- LM R7 : flush
+		if(op_d = "0110" and lm_fin = '1' and lm_index = "111") then
+			pb_en <= '1';
 
 		-- LW R7 : flush
-		if (op_c = "0100" and ir_out_pc(11 downto 9) = "111") then
+		elsif (op_c = "0100" and ir_out_pc(11 downto 9) = "111") then
 			pb_en <= '1';
 
 		-- Arith LW : stall and flush 
@@ -1572,9 +1613,10 @@ begin
 		-- Pipe A enable
 
 		-- LM R7 : flush
-
+		if(op_d = "0110" and lm_fin = '1' and lm_index = "111") then
+			pa_en <= '1';
 		-- LW R7 : flush
-		if (op_c = "0100" and ir_out_pc(11 downto 9) = "111") then
+		elsif (op_c = "0100" and ir_out_pc(11 downto 9) = "111") then
 			pa_en <= '1';
 
 		-- Arith LW : stall and flush 
@@ -1624,9 +1666,11 @@ begin
 		-- Pipe 0 enable
 
 		-- LM R7 : flush
+		if(op_d = "0110" and lm_fin = '1' and lm_index = "111") then
+			p0_en <= '1';
 
 		-- LW R7 : flush
-		if (op_c = "0100" and ir_out_pc(11 downto 9) = "111") then
+		elsif (op_c = "0100" and ir_out_pc(11 downto 9) = "111") then
 			p0_en <= '1';
 
 		-- Arith LW : stall and flush 

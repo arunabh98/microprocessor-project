@@ -472,7 +472,7 @@ begin
 		if ( op_c = "0101"  and ((op_d = "0000") or (op_d = "0010")) and ( ir_out_pd(5 downto 3) = ir_out_pc(11 downto 9) ) ) then -- ADD, ADC, ADZ, NDU, NDC, NDZ
 			datamem_din <= t3_out_pd;
 		elsif (op_c = "0101" and op_d = "0001" and ( ir_out_pd(8 downto 6) = ir_out_pc(11 downto 9) ) ) then -- ADI
-			datamem_din <= t3_out_pc;
+			datamem_din <= t3_out_pd;
 		elsif (op_c = "0101" and ((op_d = "0011") or (op_d = "1000") or (op_d = "1001") ) and ( ir_out_pd(11 downto 9) = ir_out_pc(11 downto 9) ) ) then -- LHI, JAL. JLR
 			if (op_d = "0011") then --LHI
 				datamem_din <= ir_out_pd_80;	
@@ -955,7 +955,7 @@ begin
 			c_in_pb <= c_out_pa;
 			z_in_pb <= z_out_pa;
 
-		elsif (op_a = "1001" and op_c = "0100" and ir_out_pa(8 downto 6) = ir_out_pc(11 downto 9) ) -- LW
+		elsif (op_a = "1001" and op_c = "0100" and ir_out_pa(8 downto 6) = ir_out_pc(11 downto 9) ) then -- LW
 			t1_in_pb <= rf_D1;
 			t2_in_pb <= rf_D2;
 
@@ -1017,7 +1017,7 @@ begin
 			c_in_pb <= c_out_pa;
 			z_in_pb <= z_out_pa;
 
-		elsif (op_a = "1001" and op_c = "0100" and ir_out_pa(8 downto 6) = ir_out_pd(11 downto 9) ) -- LW
+		elsif (op_a = "1001" and op_c = "0100" and ir_out_pa(8 downto 6) = ir_out_pd(11 downto 9) ) then -- LW
 			t1_in_pb <= rf_D1;
 			t2_in_pb <= rf_D2;
 
